@@ -1,0 +1,70 @@
+from openal import *
+import time
+import random
+import threading
+
+class threadSound (threading.Thread):
+    def __init__(self, x, y, z):
+        threading.Thread.__init__(self)
+        self.x = x
+        self.y = y
+        self.z = z
+    def run(self):
+        playSound(self.x,self.y,self.z)
+
+def beepBeep(source):
+    source.play()
+    time.sleep(0.1)
+    source.stop()
+    time.sleep(0.05)
+    source.play()
+    time.sleep(0.1)
+    source.stop()
+
+def gradualBeep(source):
+    source.play()
+    gain = 15.0
+    
+    while gain > 0.02:
+        source.set_gain(gain)
+        gain = gain - (gain/1.6)
+        time.sleep(0.05)
+    
+    source.set_gain(0.0)
+    time.sleep(0.5)
+    source.stop()
+
+def playSound(x,y,z):
+    v = (0,0,0)
+    listener = oalGetListener()
+    listener.set_position(v)
+    
+    waveFile = WaveFile("agudo5s.wav")
+    buffer = Buffer(waveFile)
+
+    source = Source(buffer)
+    source.set_source_relative(True)
+    v1 = (x,y,z)
+    source.set_position(v1)
+#     source.set_looping(True)
+    pitch = random.random() + 0.3
+    source.set_pitch(pitch)
+
+#     beepBeep(source)
+    gradualBeep(source)
+    
+#     oalQuit()
+
+# Create new threads
+thread1 = threadSound(2, 200, 2)
+
+thread2 = threadSound(-2, 30, 2)
+
+# Start new Threads
+thread1.start()
+time.sleep(1)
+thread2.start()
+
+# playSound(2, 100, 2)
+# playSound((random.random())*200 - 100,(random.random())*200 - 100,0)
+# playSound((random.random())*200 - 100,(random.random())*200 - 100,0)

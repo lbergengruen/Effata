@@ -1,0 +1,22 @@
+Links usados:
+
+-Datos de la biblioteca usada:
+https://pypi.org/project/PyOpenAL/#description
+
+-Videos de ejemplo:
+https://www.youtube.com/watch?v=ptjIf_9CKGE&t=190s
+
+-Info de openal.audio:
+https://pythonhosted.org/PyAL/audio.html#device-handling
+
+-Ejemplo no usado 1:
+https://pythonhosted.org/PyAL/openal.html#module-openal
+
+-Ejemplo no usado 2:
+https://bitbucket.org/marcusva/py-al/src/bd5ae7f4b283177d6ec638000e3e246d8e572ca7/
+
+-Generador de sonidos:
+https://www.wavtones.com/functiongenerator.php
+
+-Threading:
+https://www.tutorialspoint.com/python/python_multithreading.htm
