@@ -116,14 +116,14 @@ def beep_beep(source):
     
 def gradual_beep(source):
     source.play()
-    gain = 15.0
+    gain = 8.0
     
-    while gain > 0.02:
-        source.set_gain(gain)
-        gain = gain - (gain/1.6)
-        time.sleep(0.05)
+#     while gain > 0.02:
+#         source.set_gain(gain)
+#         gain = gain - (gain/1.6)
+#         time.sleep(0.05)
     
-    source.set_gain(0.0)
+#     source.set_gain(0.0)
     time.sleep(0.5)
     source.stop()
 
