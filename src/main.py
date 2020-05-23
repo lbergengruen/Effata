@@ -24,8 +24,6 @@ H = 576
 NTHREADS = 2
 WAVE_FILE = WaveFile("agudo5s.wav")
 
-sources = {}
-
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
 net = cv2.dnn.readNetFromCaffe("./MobileNetSSD_deploy.prototxt.txt", "./MobileNetSSD_deploy.caffemodel") 
 
@@ -124,7 +122,7 @@ def gradual_beep(source):
 #         time.sleep(0.05)
     
 #     source.set_gain(0.0)
-    time.sleep(0.5)
+    time.sleep(0.7)
     source.stop()
 
 def play_sound(x,y,z):
@@ -134,11 +132,10 @@ def play_sound(x,y,z):
     source.set_source_relative(True)
     v1 = (x,y,z)
     source.set_position(v1)
-    pitch = random.random() + 0.3
+    pitch = 0.5 + 0.3
     source.set_pitch(pitch)
-
-#     beep_beep(source)
-    gradual_beep(source)
+    beep_beep(source)
+#    gradual_beep(source)
 #     oalQuit()
 
 def new_thread(i, sem):
@@ -149,25 +146,27 @@ def new_thread(i, sem):
 
 def run_detection(sem):
     print("Running detection")
+    global sources
     while ((time.time() - start_time)<10):         
         with sem:
             sem.notifyAll()
             sem.wait(2)
             initial = time.time()
             coordinates, imagen = detect_objects(["./left.jpeg", "./right.jpeg"], net)
-            global sources
             sources = stereo_match(coordinates[0], coordinates[1])
-#             print(time.time()-initial)
+            t=time.time()- start_time -5
+            sources=[[t,0.5,0]]
+            print(time.time()-initial)
             print("Detected")
             
 def run_notification(sem):
     print("Running notification")
+    global sources
     while ((time.time() - start_time)<10):
         with sem:
             sem.notifyAll()
             sem.wait(2)
             print("Notify")
-            global sources
             print(sources)
             for coords in sources:
                 play_sound(coords[0],coords[1],coords[2])
