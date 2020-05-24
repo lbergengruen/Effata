@@ -23,6 +23,7 @@ W = 768
 H = 576
 NTHREADS = 2
 WAVE_FILE = WaveFile("agudo5s.wav")
+cam_ports = [0, 2]
 
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
 net = cv2.dnn.readNetFromCaffe("./MobileNetSSD_deploy.prototxt.txt", "./MobileNetSSD_deploy.caffemodel") 
@@ -52,7 +53,7 @@ def detect_objects(orig_image_paths, net):
                 label = "{}: {:.2f}%".format(CLASSES[idx], confidence*100)
                 
                 cv2.rectangle(images[0], (start_x, start_y), (end_x, end_y), COLORS, 2)
-                y = start_y - 15 if start_y - 15 > 15 else start_Y + 15
+                y = start_y - 15 if start_y - 15 > 15 else start_y + 15
                 cv2.putText(images[0], label, (start_x, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS, 2)
                 result.append({"class": CLASSES[idx], "confidence": confidence*100, "coordinates":box})
@@ -147,15 +148,23 @@ def new_thread(i, sem):
 def run_detection(sem):
     print("Running detection")
     global sources
+    sources = []
     while ((time.time() - start_time)<10):         
-        with sem:
+        with sem:    
             sem.notifyAll()
+            images = []
+            for cam in cam_ports:
+                camera = cv2.VideoCapture(cam)
+                time.sleep(0.1)  # If you don't wait, the image will be dark
+                return_value1, image = camera.read()
+                cv2.imwrite("im_{}.png".format(cam), image)
+                images.append("im_{}.png".format(cam))
             sem.wait(2)
             initial = time.time()
-            coordinates, imagen = detect_objects(["./left.jpeg", "./right.jpeg"], net)
+            coordinates, imagen = detect_objects(images, net)#detect_objects(["./left.jpeg", "./right.jpeg"], net)
             sources = stereo_match(coordinates[0], coordinates[1])
-            t=time.time()- start_time -5
-            sources=[[t,0.5,0]]
+            #t=time.time()- start_time -5
+            #sources=[[t,0.5,0]]
             print(time.time()-initial)
             print("Detected")
             
