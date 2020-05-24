@@ -125,6 +125,19 @@ def gradual_beep(source):
     time.sleep(0.7)
     source.stop()
 
+def piano_beep(source):
+    source.play()
+    gain = 15.0
+    
+    while gain > 0.02:
+        source.set_gain(gain)
+        gain = gain - (gain/17)
+        time.sleep(0.05)
+    
+    source.set_gain(0.0)
+    time.sleep(0.4)
+    source.stop()    
+    
 def play_sound(x,y,z):
     buffer = Buffer(WAVE_FILE)
     source = Source(buffer)
@@ -136,6 +149,7 @@ def play_sound(x,y,z):
     source.set_pitch(pitch)
     beep_beep(source)
 #    gradual_beep(source)
+#     piano_beep(source)
 #     oalQuit()
 
 def new_thread(i, sem):
