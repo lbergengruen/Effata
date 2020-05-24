@@ -149,16 +149,21 @@ def run_detection(sem):
     print("Running detection")
     global sources
     sources = []
+    global cameras
+    cameras = []
+    for port in cam_ports:
+        cameras.append(cv2.VideoCapture(port))
+        
     while ((time.time() - start_time)<10):         
         with sem:    
             sem.notifyAll()
             images = []
-            for cam in cam_ports:
-                camera = cv2.VideoCapture(cam)
-                time.sleep(0.1)  # If you don't wait, the image will be dark
-                return_value1, image = camera.read()
-                cv2.imwrite("im_{}.png".format(cam), image)
-                images.append("im_{}.png".format(cam))
+            i=0
+            for cam in cameras:
+                i=i+1
+                return_value, image = cam.read()
+                cv2.imwrite("im_{}.png".format(i), image)
+                images.append("im_{}.png".format(i))
             sem.wait(2)
             initial = time.time()
             coordinates, imagen = detect_objects(images, net)#detect_objects(["./left.jpeg", "./right.jpeg"], net)
@@ -196,5 +201,7 @@ for i in range(NTHREADS):
 for i in range(NTHREADS):
     # esperamos que acabe el hilo num i
     simplethread[i].join()
+    for cam in cameras:
+        del(cam)
 
 print("[*] all threads finished")
