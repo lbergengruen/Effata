@@ -152,24 +152,27 @@ def run_detection(sem):
     global cameras
     cameras = []
     for port in cam_ports:
-        cameras.append(cv2.VideoCapture(port))
-        
-    while ((time.time() - start_time)<10):         
-        with sem:    
+        cap = cv2.VideoCapture(port)
+        if (not cap.isOpened()):
+            cap.open()
+        cameras.append(cap)
+
+    while ((time.time() - start_time)<10):
+        with sem:
             sem.notifyAll()
             images = []
             i=0
             for cam in cameras:
                 i=i+1
                 return_value, image = cam.read()
-                cv2.imwrite("im_{}.png".format(i), image)
-                images.append("im_{}.png".format(i))
+                cv2.imwrite("./im_{}.png".format(i), image)
+                images.append("./im_{}.png".format(i))
             sem.wait(2)
             initial = time.time()
-            coordinates, imagen = detect_objects(images, net)#detect_objects(["./left.jpeg", "./right.jpeg"], net)
+            coordinates, imagen = detect_objects(images, net)
             sources = stereo_match(coordinates[0], coordinates[1])
-            #t=time.time()- start_time -5
-            #sources=[[t,0.5,0]]
+            t=time.time()- start_time -5
+            sources=[[t,0.5,0]]
             print(time.time()-initial)
             print("Detected")
             
