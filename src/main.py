@@ -10,7 +10,6 @@ from notification_module import *
 NTHREADS = 2
 cam_ports = [0, 2]
 
-
 def new_thread(i, sem):
     if i==1:
         run_detection(sem)
@@ -61,6 +60,7 @@ def run_detection(sem):
 def run_notification(sem):
     print("Running notification")
     global sources
+    sources = []
     while ((time.time() - start_time)<10):
         with sem:
             sem.notifyAll()
