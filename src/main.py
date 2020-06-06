@@ -33,12 +33,12 @@ def run_detection(sem):
     time.sleep(2.0)
     cameras = [webcam1, webcam2]
     names = ['Cam #1', 'Cam #2']
+    i=0
 
     while ((time.time() - start_time)<10):
         with sem:
             sem.notifyAll()
             images = []
-            i=0
             
             initial = time.time()
             for stream in cameras:       
@@ -50,6 +50,10 @@ def run_detection(sem):
             
             coordinates, imagen = detect_objects(images, net)
             sources = stereo_match(coordinates[0], coordinates[1])
+            if (len(sources)>0):
+                i=i+1
+                print("Guardando Imagen")
+                cv2.imwrite(f"./result/imagen_{i}.png",imagen)
             cv2.imshow("Camera", imagen)
             #t=time.time()- start_time -5
             #sources=[[t,0.5,0]]
