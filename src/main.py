@@ -165,8 +165,8 @@ def run_detection(sem):
             for cam in cameras:
                 i=i+1
                 return_value, image = cam.read()
-                cv2.imwrite("./im_{}.png".format(i), image)
-                images.append("./im_{}.png".format(i))
+                cv2.imwrite("./images/im_{}.png".format(i), image)
+                images.append("./images/im_{}.png".format(i))
             sem.wait(2)
             initial = time.time()
             coordinates, imagen = detect_objects(images, net)
