@@ -176,6 +176,7 @@ def run_detection(sem):
 def run_notification(sem):
     print("Running notification")
     global sources
+    sources = []
     while ((time.time() - start_time)<10):
         with sem:
             sem.notifyAll()
