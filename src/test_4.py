@@ -7,22 +7,36 @@ from detection_module import *
 from notification_module import *
 
 #CONSTANTES
+WAVE_FILE = WaveFile("agudo5s.wav")
 NTHREADS = 2
 cam_ports = [0, 2]
-    
-def play_sound(x,y,z):
+
+
+def playSound(x,y,z,tipo):
+    alDistanceModel(AL_EXPONENT_DISTANCE)
     buffer = Buffer(WAVE_FILE)
     source = Source(buffer)
     
     source.set_source_relative(True)
     v1 = (x,y,z)
     source.set_position(v1)
-    pitch = 0.5 + 0.3
+    source.set_reference_distance(0.5)
+    source.set_rolloff_factor(0.5)
+    pitch = 0.2
     source.set_pitch(pitch)
-    beep_beep(source)
-#    gradual_beep(source)
-#     oalQuit()
+    
+    if tipo==1:
+        beep_beep(source)
+    if tipo==2:
+        gradual_beep_short(source)
+    if tipo==3:
+        gradual_beep_long(source)
+    if tipo==4:
+        sin_beep(source)
+    if tipo==5:
+        gradual_beep_beep(source)
 
+        
 def new_thread(i, sem):
     if i==1:
         run_detection(sem)
@@ -67,7 +81,7 @@ def run_detection(sem):
                 i=i+1
                 print("Guardando Imagen")
                 cv2.imwrite(f"./result/imagen_{i}.png",imagen)
-            #cv2.imshow("Camera", imagen)
+            cv2.imshow("Camera", imagen)
             #t=time.time()- start_time -5
             #sources=[[t,0.5,0]]
             
@@ -85,7 +99,7 @@ def run_notification(sem):
             print("Notify")
             print(sources)
             for coords in sources:
-                play_sound(coords[0],coords[1],coords[2])
+                play_sound(coords[0],coords[1],coords[2],sys.argv[1])
 
 sem = Condition()
 start_time = time.time()
