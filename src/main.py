@@ -9,6 +9,7 @@ from notification_module import *
 #CONSTANTES
 NTHREADS = 2
 cam_ports = [0, 2]
+total_time = 60
     
 
 def new_thread(i, sem):
@@ -36,7 +37,7 @@ def run_detection(sem):
     names = ['Cam #1', 'Cam #2']
     i=0
 
-    while ((time.time() - start_time)<10):
+    while ((time.time() - start_time)<total_time):
         with sem:
             sem.notifyAll()
             images = []
@@ -53,8 +54,8 @@ def run_detection(sem):
             sources = stereo_match(coordinates[0], coordinates[1])
             if (len(sources)>0):
                 i=i+1
-                print("Guardando Imagen")
-                cv2.imwrite(f"./result/imagen_{i}.png",imagen)
+                #print("Guardando Imagen")
+                #cv2.imwrite(f"./result/imagen_{i}.png",imagen)
             #cv2.imshow("Camera", imagen)
             #t=time.time()- start_time -5
             #sources=[[t,0.5,0]]
@@ -66,7 +67,7 @@ def run_notification(sem):
     print("Running notification")
     global sources
     sources = []
-    while ((time.time() - start_time)<10):
+    while ((time.time() - start_time)<total_time):
         with sem:
             sem.notifyAll()
             sem.wait(2)
