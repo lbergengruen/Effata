@@ -13,11 +13,9 @@ def play_sound(x,y,z):
     source.set_source_relative(True)
     v1 = (x,y,z)
     source.set_position(v1)
-    pitch = 0.5 + 0.3
+    pitch = 0.105
     source.set_pitch(pitch)
-    beep_beep(source)
-#    gradual_beep(source)
-#     oalQuit()
+    gradual_beep_long(source)
 
 def beep_beep(source):
     source.play()
@@ -56,7 +54,6 @@ def gradual_beep_long(source):
     source.set_gain(0.0)
     time.sleep(0.4)
     source.stop()
-
     
 def gradual_beep_beep(source):
     initial = source.gain
