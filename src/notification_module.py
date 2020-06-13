@@ -5,7 +5,20 @@ from random import randint
 
 #CONSTANTES
 WAVE_FILE = WaveFile("agudo5s.wav")
-       
+
+def play_sound(x,y,z):
+    buffer = Buffer(WAVE_FILE)
+    source = Source(buffer)
+    
+    source.set_source_relative(True)
+    v1 = (x,y,z)
+    source.set_position(v1)
+    pitch = 0.5 + 0.3
+    source.set_pitch(pitch)
+    beep_beep(source)
+#    gradual_beep(source)
+#     oalQuit()
+
 def beep_beep(source):
     source.play()
     time.sleep(0.1)
