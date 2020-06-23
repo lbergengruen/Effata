@@ -13,7 +13,7 @@ def play_sound(x,y,z):
     source.set_source_relative(True)
     v1 = (x,y,z)
     source.set_position(v1)
-    pitch = 0.105
+    pitch = 0.11
     source.set_pitch(pitch)
     gradual_beep_long(source)
 

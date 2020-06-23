@@ -1,23 +1,17 @@
 import numpy as np
 import cv2
-#import argparse
-#import time
-#import PIL
-#from PIL import Image
-#import matplotlib.pyplot as plt
 import math
-#import sys
-#import random
-#from random import randint
 
 #CONSTANTES
 WEIGHTS = '../YOLO v3/yolov3.weights'
 CONFIG = '../YOLO v3/yolov3.cfg'
 CLASES = '../YOLO TINY/yolov3-tiny.txt'
 MAX_DISTANCE_CM = 500 #5 metros
-MAX_ANGLE_LENSE = 85 #En grados
-W = 768
-H = 576
+MAX_ANGLE_LENSE = 2*85 #En grados
+camera_offset_cm = 10
+offset_adjust = 4300
+W = 160
+H = 120
 
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
 net = cv2.dnn.readNetFromCaffe("./MobileNetSSD_deploy.prototxt.txt", "./MobileNetSSD_deploy.caffemodel") 
@@ -55,9 +49,6 @@ def detect_objects(images, net):
     return final_result, images[0]
 
 def stereo_match(left_boxes, right_boxes):
-    camera_offset_cm = 5
-    offset_adjust = 4300 # offset_adjust: SSD uses around 4300 and YOLO v3 uses around 30
-#     objects = []
     coords = []
 
     for box1 in left_boxes:

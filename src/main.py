@@ -5,11 +5,12 @@ from threading import Condition
 
 from detection_module import *
 from notification_module import *
+from utils.py import *
 
 #CONSTANTES
 NTHREADS = 2
 cam_ports = [0, 2]
-total_time = 60
+total_time = 90
     
 
 def new_thread(i, sem):
@@ -52,10 +53,13 @@ def run_detection(sem):
             
             coordinates, imagen = detect_objects(images, net)
             sources = stereo_match(coordinates[0], coordinates[1])
-            if (len(sources)>0):
-                i=i+1
-                #print("Guardando Imagen")
-                #cv2.imwrite(f"./result/imagen_{i}.png",imagen)
+            print("Original sources: {}".format(sources))
+            sources = reduce_sources(sources)
+            print("Reduced sources: {}".format(sources))
+            #if (len(sources)>0):
+            #    i=i+1
+            #    print("Guardando Imagen")
+            #    cv2.imwrite(f"./result/imagen_{i}.png",imagen)
             #cv2.imshow("Camera", imagen)
             #t=time.time()- start_time -5
             #sources=[[t,0.5,0]]
@@ -72,7 +76,7 @@ def run_notification(sem):
             sem.notifyAll()
             sem.wait(2)
             print("Notify")
-            print(sources)
+            #print(sources)
             for coords in sources:
                 play_sound(coords[0],coords[1],coords[2])
 
