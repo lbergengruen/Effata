@@ -5,7 +5,7 @@ from threading import Condition
 
 from detection_module import *
 from notification_module import *
-from utils.py import *
+from utils import *
 
 #CONSTANTES
 NTHREADS = 2
@@ -56,10 +56,10 @@ def run_detection(sem):
             print("Original sources: {}".format(sources))
             sources = reduce_sources(sources)
             print("Reduced sources: {}".format(sources))
-            #if (len(sources)>0):
-            #    i=i+1
-            #    print("Guardando Imagen")
-            #    cv2.imwrite(f"./result/imagen_{i}.png",imagen)
+            if (len(sources)>0):
+                i=i+1
+                print("Guardando Imagen")
+                cv2.imwrite(f"./result/imagen_{i}.png",imagen)
             #cv2.imshow("Camera", imagen)
             #t=time.time()- start_time -5
             #sources=[[t,0.5,0]]

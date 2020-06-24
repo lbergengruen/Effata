@@ -3,17 +3,16 @@ import cv2
 import math
 
 #CONSTANTES
-WEIGHTS = '../YOLO v3/yolov3.weights'
-CONFIG = '../YOLO v3/yolov3.cfg'
-CLASES = '../YOLO TINY/yolov3-tiny.txt'
-MAX_DISTANCE_CM = 500 #5 metros
-MAX_ANGLE_LENSE = 2*85 #En grados
+MAX_DISTANCE_CM = 800 #5 metros
+MAX_ANGLE_LENSE_X = 160 #En grados
+MAX_ANGLE_LENSE_Y = 120 #En grados
 camera_offset_cm = 10
 offset_adjust = 4300
-W = 160
-H = 120
+W = 320
+H = 240
 
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+
 net = cv2.dnn.readNetFromCaffe("./MobileNetSSD_deploy.prototxt.txt", "./MobileNetSSD_deploy.caffemodel") 
 
 def detect_objects(images, net):
@@ -32,8 +31,7 @@ def detect_objects(images, net):
 
         for i in np.arange(0, detections.shape[2]):
             confidence = detections[0, 0, i, 2]
-            
-            if confidence > 0.2:
+            if confidence > 0.4:
                 idx = int(detections[0, 0, i, 1])
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (start_x, start_y, end_x, end_y) = box.astype("int")
@@ -44,6 +42,7 @@ def detect_objects(images, net):
                 y = start_y - 15 if start_y - 15 > 15 else start_y + 15
                 cv2.putText(images[0], label, (start_x, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS, 2)
+                #if CLASSES[idx]=="person":
                 result.append({"class": CLASSES[idx], "confidence": confidence*100, "coordinates":box})
         final_result.append(result)
     return final_result, images[0]
@@ -54,6 +53,7 @@ def stereo_match(left_boxes, right_boxes):
     for box1 in left_boxes:
         for box2 in right_boxes:
             if box1['class']==box2['class']:
+                #print(box1['class'])
                 c1 = [(box1['coordinates'][0]+box1['coordinates'][2]/2),(box1['coordinates'][1]+box1['coordinates'][3]/2)]
                 c2 = [(box2['coordinates'][0]+box2['coordinates'][2]/2),(box2['coordinates'][1]+box2['coordinates'][3]/2)]
                 sqr_diff=math.sqrt((c1[0]-c2[0])*(c1[0]-c2[0]) + (c1[1]-c2[1])*(c1[1]-c2[1]))
@@ -70,8 +70,8 @@ def stereo_match(left_boxes, right_boxes):
 
 def to_polar_coords(center):
     im_center = [W/2, H/2]
-    angle_x = math.asin(((center[0]-im_center[0])*math.sin(MAX_ANGLE_LENSE))/im_center[0])
-    angle_y = math.asin(((center[1]-im_center[1])*math.sin(MAX_ANGLE_LENSE))/im_center[1])
+    angle_x = math.asin(((center[0]-im_center[0])/im_center[0])*math.sin(MAX_ANGLE_LENSE_X))
+    angle_y = math.asin(((center[1]-im_center[1])/im_center[1])*math.sin(MAX_ANGLE_LENSE_Y))
     return [angle_x, angle_y]
 
 def to_cartesian_coords(angle_x,angle_y, distance):
