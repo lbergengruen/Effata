@@ -1,6 +1,17 @@
-import numpy as np
+# import the necessary packages
+from __future__ import print_function
+import datetime
+import time
 import cv2
 import math
+import numpy as np
+import tensorflow as tf
+from object_detection.utils import label_map_util
+from object_detection.utils import visualization_utils as viz_utils
+from PIL import Image
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
 #CONSTANTES
 MAX_DISTANCE_CM = 800 #5 metros
@@ -11,41 +22,73 @@ offset_adjust = 4300
 W = 320
 H = 240
 
-CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person", "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree"]
 
-net = cv2.dnn.readNetFromCaffe("./MobileNetSSD_deploy.prototxt.txt", "./MobileNetSSD_deploy.caffemodel") 
+PATH_TO_LABELS = "./models/ssd_trained/label_map.pbtxt"
+PATH_TO_SAVED_MODEL = "./models/ssd_trained/saved_model"
+
+net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+
+category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
 def detect_objects(images, net):
-    #orig_images = [cv2.imread(i) for i in orig_image_paths]
-    #images = [cv2.resize(i, (W, H)) for i in orig_images]
     w = images[0].shape[1]
     h = images[0].shape[0]
     final_result = []
-    
+
     for image in images:
         result = []
-        COLORS = np.random.uniform(0, 255, 3)
-        blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 0.007843, (300, 300), 127.5)
-        net.setInput(blob)
-        detections = net.forward()
+        image_np = np.array(image)
+        input_tensor = tf.convert_to_tensor(image_np)
+        input_tensor = input_tensor[tf.newaxis, ...]
+        detections = net(input_tensor)
 
-        for i in np.arange(0, detections.shape[2]):
-            confidence = detections[0, 0, i, 2]
-            if confidence > 0.4:
-                idx = int(detections[0, 0, i, 1])
-                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-                (start_x, start_y, end_x, end_y) = box.astype("int")
-                
-                label = "{}: {:.2f}%".format(CLASSES[idx], confidence*100)
-                
-                cv2.rectangle(images[0], (start_x, start_y), (end_x, end_y), COLORS, 2)
-                y = start_y - 15 if start_y - 15 > 15 else start_y + 15
-                cv2.putText(images[0], label, (start_x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS, 2)
-                #if CLASSES[idx]=="person":
-                result.append({"class": CLASSES[idx], "confidence": confidence*100, "coordinates":box})
+        num_detections = int(detections.pop('num_detections'))
+        detections = {key: value[0, :num_detections].numpy() for key, value in detections.items()}
+        detections['num_detections'] = num_detections
+
+        # detection_classes should be ints.
+        detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
+
+        filtered_detections = {'detection_anchor_indices': [], 'detection_scores': [], 'detection_boxes': [],
+                               'detection_classes': [], 'raw_detection_boxes': [], 'detection_multiclass_scores': [],
+                               'raw_detection_scores': [], 'num_detections': 0}
+        for i in np.arange(0, len(detections['detection_scores'])):
+            if detections['detection_scores'][i] > 0.40:
+                filtered_detections['detection_anchor_indices'].append(detections['detection_anchor_indices'][i])
+                filtered_detections['detection_scores'].append(detections['detection_scores'][i])
+                filtered_detections['detection_boxes'].append(detections['detection_boxes'][i])
+                filtered_detections['detection_classes'].append(detections['detection_classes'][i])
+                filtered_detections['raw_detection_boxes'].append(detections['raw_detection_boxes'][i])
+                filtered_detections['detection_multiclass_scores'].append(detections['detection_multiclass_scores'][i])
+                filtered_detections['raw_detection_scores'].append(detections['raw_detection_scores'][i])
+                filtered_detections['num_detections'] = filtered_detections['num_detections'] + 1
+
+                result.append({"class": CLASSES[detections['detection_classes'][i]],
+                               "confidence": detections['detection_scores'][i] * 100,
+                               "coordinates": detections['detection_boxes'][i]})
         final_result.append(result)
-    return final_result, images[0]
+
+    image_np_with_detections = image_np.copy()
+
+    for detection in filtered_detections:
+        viz_utils.visualize_boxes_and_labels_on_image_array(
+            image_np_with_detections,
+            detection['detection_boxes'],
+            detection['detection_classes'],
+            detection['detection_scores'],
+            category_index,
+            use_normalized_coordinates=True,
+            max_boxes_to_draw=20,
+            min_score_thresh=.40,
+            agnostic_mode=False)
+
+    # plt.figure(figsize=(12, 8))
+    # plt.imshow(image_np_with_detections)
+    # plt.show()
+    # print(final_result)
+
+    return final_result, image_np_with_detections
 
 def stereo_match(left_boxes, right_boxes):
     coords = []
