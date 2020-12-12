@@ -14,7 +14,7 @@ total_time = 540
     
 
 def new_thread(i, sem):
-    if i==1:
+    if i == 1:
         run_detection(sem)
     else:
         run_notification(sem)
@@ -36,7 +36,7 @@ def run_detection(sem):
     time.sleep(2.0)
     cameras = [webcam1, webcam2]
     names = ['Cam #1', 'Cam #2']
-    i=0
+    i = 0
 
     while ((time.time() - start_time)<total_time):
         with sem:
@@ -47,8 +47,6 @@ def run_detection(sem):
             for stream in cameras:       
                 rval, frame = stream.read()
                 images.append(frame)
-                #cv2.imshow(names[i], frame)
-                #i=i+1
             sem.wait(2)
             
             coordinates, imagen = detect_objects(images, net)
@@ -60,10 +58,7 @@ def run_detection(sem):
                 i=i+1
                 print("Guardando Imagen")
                 cv2.imwrite(f"./result/imagen_{i}.png",imagen)
-            #cv2.imshow("Camera", imagen)
-            #t=time.time()- start_time -5
-            #sources=[[t,0.5,0]]
-            
+
             print(time.time()-initial)
             print("Detected")
             

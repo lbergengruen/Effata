@@ -3,15 +3,12 @@ from __future__ import print_function
 import datetime
 import time
 import cv2
-import math
-from array import array
 import numpy as np
 import tensorflow as tf
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
-from PIL import Image
-import matplotlib.pyplot as plt
 import warnings
+
 warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
 print("[INFO] starting cameras...")

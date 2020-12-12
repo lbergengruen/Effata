@@ -1,39 +1,35 @@
 # import the necessary packages
 from __future__ import print_function
-import datetime
-import time
-import cv2
 import math
 import numpy as np
 import tensorflow as tf
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
-from PIL import Image
-import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
-#CONSTANTES
-MAX_DISTANCE_CM = 800 #5 metros
-MAX_ANGLE_LENSE_X = 160 #En grados
-MAX_ANGLE_LENSE_Y = 120 #En grados
+# CONSTANTES
+MAX_DISTANCE_CM = 800       # Valor en Centimetros
+MAX_ANGLE_LENSE_X = 160     # Valor en grados
+MAX_ANGLE_LENSE_Y = 120     # Valor en grados
 camera_offset_cm = 10
 offset_adjust = 4300
 W = 320
 H = 240
 
-CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person", "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree"]
+
+# MODEL INITIALIZATION
+CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
+           "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree"]
 
 PATH_TO_LABELS = "./models/ssd_trained/label_map.pbtxt"
 PATH_TO_SAVED_MODEL = "./models/ssd_trained/saved_model"
 
 net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
-
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
+
 def detect_objects(images, net):
-    w = images[0].shape[1]
-    h = images[0].shape[0]
     final_result = []
 
     for image in images:
@@ -86,32 +82,29 @@ def detect_objects(images, net):
         min_score_thresh=.40,
         agnostic_mode=False)
 
-    # plt.figure(figsize=(12, 8))
-    # plt.imshow(image_np_with_detections)
-    # plt.show()
-    print(final_result)
-
     return final_result, image_np_with_detections
+
 
 def stereo_match(left_boxes, right_boxes):
     coords = []
 
     for box1 in left_boxes:
         for box2 in right_boxes:
+
             if box1['class']==box2['class']:
-                #print(box1['class'])
                 c1 = [(box1['coordinates'][0]+box1['coordinates'][2]/2),(box1['coordinates'][1]+box1['coordinates'][3]/2)]
                 c2 = [(box2['coordinates'][0]+box2['coordinates'][2]/2),(box2['coordinates'][1]+box2['coordinates'][3]/2)]
                 sqr_diff=math.sqrt((c1[0]-c2[0])*(c1[0]-c2[0]) + (c1[1]-c2[1])*(c1[1]-c2[1]))
                 x = (c1[0]+c2[0])/2
                 y = (c1[1]+c2[1])/2
                 distance = camera_offset_cm/sqr_diff*offset_adjust
+
                 if distance <= MAX_DISTANCE_CM:
                     center = [x,y]
                     angles = to_polar_coords(center)
                     cartesian_coords = to_cartesian_coords(angles[0],angles[1], distance)
                     coords.append(cartesian_coords)
-#                     objects.append({"class":box1["class"], "coords": cartesian_coords})
+
     return coords
 
 def to_polar_coords(center):
