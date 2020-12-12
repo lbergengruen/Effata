@@ -10,7 +10,7 @@ from utils import *
 #CONSTANTES
 NTHREADS = 2
 cam_ports = [0, 2]
-total_time = 90
+total_time = 540
     
 
 def new_thread(i, sem):
