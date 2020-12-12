@@ -50,43 +50,46 @@ def detect_objects(images, net):
         # detection_classes should be ints.
         detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
 
-        filtered_detections = {'detection_anchor_indices': [], 'detection_scores': [], 'detection_boxes': [],
-                               'detection_classes': [], 'raw_detection_boxes': [], 'detection_multiclass_scores': [],
+        filtered_detections = {'detection_anchor_indices': [], 'detection_scores': [],
+                               'detection_boxes': [],
+                               'detection_classes': [], 'raw_detection_boxes': [],
+                               'detection_multiclass_scores': [],
                                'raw_detection_scores': [], 'num_detections': 0}
-        for i in np.arange(0, len(detections['detection_scores'])):
+
+        for i in np.arange(0, detections['num_detections']):
             if detections['detection_scores'][i] > 0.40:
                 filtered_detections['detection_anchor_indices'].append(detections['detection_anchor_indices'][i])
                 filtered_detections['detection_scores'].append(detections['detection_scores'][i])
-                filtered_detections['detection_boxes'].append(detections['detection_boxes'][i])
+                filtered_detections['detection_boxes'].append(detections['detection_boxes'][i].tolist())
                 filtered_detections['detection_classes'].append(detections['detection_classes'][i])
-                filtered_detections['raw_detection_boxes'].append(detections['raw_detection_boxes'][i])
-                filtered_detections['detection_multiclass_scores'].append(detections['detection_multiclass_scores'][i])
-                filtered_detections['raw_detection_scores'].append(detections['raw_detection_scores'][i])
+                filtered_detections['raw_detection_boxes'].append(detections['raw_detection_boxes'][i].tolist())
+                filtered_detections['detection_multiclass_scores'].append(
+                    detections['detection_multiclass_scores'][i].tolist())
+                filtered_detections['raw_detection_scores'].append(detections['raw_detection_scores'][i].tolist())
                 filtered_detections['num_detections'] = filtered_detections['num_detections'] + 1
 
-                result.append({"class": CLASSES[detections['detection_classes'][i]],
+                result.append({"class": CLASSES[detections['detection_classes'][i] - 1],
                                "confidence": detections['detection_scores'][i] * 100,
                                "coordinates": detections['detection_boxes'][i]})
         final_result.append(result)
 
     image_np_with_detections = image_np.copy()
 
-    for detection in filtered_detections:
-        viz_utils.visualize_boxes_and_labels_on_image_array(
-            image_np_with_detections,
-            detection['detection_boxes'],
-            detection['detection_classes'],
-            detection['detection_scores'],
-            category_index,
-            use_normalized_coordinates=True,
-            max_boxes_to_draw=20,
-            min_score_thresh=.40,
-            agnostic_mode=False)
+    viz_utils.visualize_boxes_and_labels_on_image_array(
+        image_np_with_detections,
+        np.array(filtered_detections['detection_boxes']),
+        filtered_detections['detection_classes'],
+        filtered_detections['detection_scores'],
+        category_index,
+        use_normalized_coordinates=True,
+        max_boxes_to_draw=20,
+        min_score_thresh=.40,
+        agnostic_mode=False)
 
     # plt.figure(figsize=(12, 8))
     # plt.imshow(image_np_with_detections)
     # plt.show()
-    # print(final_result)
+    print(final_result)
 
     return final_result, image_np_with_detections
 
