@@ -58,6 +58,7 @@ def run_detection(sem):
                 i=i+1
                 print("Guardando Imagen")
                 cv2.imwrite(f"./result/imagen_{i}.png",imagen)
+            cv2.imshow("Camera", imagen)
 
             print(time.time()-initial)
             print("Detected")
