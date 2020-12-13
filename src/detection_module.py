@@ -13,10 +13,10 @@ MAX_DISTANCE_CM = 800       # Valor en Centimetros
 MAX_ANGLE_LENSE_X = 160     # Valor en grados
 MAX_ANGLE_LENSE_Y = 120     # Valor en grados
 camera_offset_cm = 10
-offset_adjust = 4300
+offset_adjust = 300
 W = 320
 H = 240
-
+MIN_CONFIDENCE = 0.50
 
 # MODEL INITIALIZATION
 CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
@@ -31,6 +31,7 @@ category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABE
 
 def detect_objects(images, net):
     final_result = []
+    list_detections = []
 
     for image in images:
         result = []
@@ -53,7 +54,7 @@ def detect_objects(images, net):
                                'raw_detection_scores': [], 'num_detections': 0}
 
         for i in np.arange(0, detections['num_detections']):
-            if detections['detection_scores'][i] > 0.40:
+            if detections['detection_scores'][i] > MIN_CONFIDENCE:
                 filtered_detections['detection_anchor_indices'].append(detections['detection_anchor_indices'][i])
                 filtered_detections['detection_scores'].append(detections['detection_scores'][i])
                 filtered_detections['detection_boxes'].append(detections['detection_boxes'][i].tolist())
@@ -66,21 +67,23 @@ def detect_objects(images, net):
 
                 result.append({"class": CLASSES[detections['detection_classes'][i] - 1],
                                "confidence": detections['detection_scores'][i] * 100,
-                               "coordinates": detections['detection_boxes'][i]})
+                               "coordinates": detections['detection_boxes'][i].tolist()})
+        list_detections.append(filtered_detections)
         final_result.append(result)
 
     image_np_with_detections = image_np.copy()
 
-    viz_utils.visualize_boxes_and_labels_on_image_array(
-        image_np_with_detections,
-        np.array(filtered_detections['detection_boxes']),
-        filtered_detections['detection_classes'],
-        filtered_detections['detection_scores'],
-        category_index,
-        use_normalized_coordinates=True,
-        max_boxes_to_draw=20,
-        min_score_thresh=.40,
-        agnostic_mode=False)
+    for filtered_detections in list_detections:
+        viz_utils.visualize_boxes_and_labels_on_image_array(
+            image_np_with_detections,
+            np.array(filtered_detections['detection_boxes']),
+            filtered_detections['detection_classes'],
+            filtered_detections['detection_scores'],
+            category_index,
+            use_normalized_coordinates=True,
+            max_boxes_to_draw=20,
+            min_score_thresh=MIN_CONFIDENCE,
+            agnostic_mode=False)
 
     return final_result, image_np_with_detections
 
@@ -92,13 +95,14 @@ def stereo_match(left_boxes, right_boxes):
         for box2 in right_boxes:
 
             if box1['class']==box2['class']:
-                c1 = [(box1['coordinates'][0]+box1['coordinates'][2]/2),(box1['coordinates'][1]+box1['coordinates'][3]/2)]
-                c2 = [(box2['coordinates'][0]+box2['coordinates'][2]/2),(box2['coordinates'][1]+box2['coordinates'][3]/2)]
+                
+                c1 = [(box1['coordinates'][0]+box1['coordinates'][2])*H/2,(box1['coordinates'][1]+box1['coordinates'][3])*W/2]
+                c2 = [(box2['coordinates'][0]+box2['coordinates'][2])*H/2,(box2['coordinates'][1]+box2['coordinates'][3])*W/2]
                 sqr_diff=math.sqrt((c1[0]-c2[0])*(c1[0]-c2[0]) + (c1[1]-c2[1])*(c1[1]-c2[1]))
                 x = (c1[0]+c2[0])/2
                 y = (c1[1]+c2[1])/2
                 distance = camera_offset_cm/sqr_diff*offset_adjust
-
+                print(distance)
                 if distance <= MAX_DISTANCE_CM:
                     center = [x,y]
                     angles = to_polar_coords(center)

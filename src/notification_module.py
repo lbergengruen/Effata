@@ -4,7 +4,7 @@ import random
 from random import randint
 
 #CONSTANTES
-WAVE_FILE = WaveFile("agudo5s.wav")
+WAVE_FILE = WaveFile("./sounds/agudo5s.wav")
 
 def play_sound(x,y,z):
     buffer = Buffer(WAVE_FILE)
