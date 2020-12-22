@@ -18,10 +18,10 @@ webcam1 = cv2.VideoCapture(0)
 
 time.sleep(2.0)
 
-CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person", "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree"]
+CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person", "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
 
-PATH_TO_LABELS = "../models/ssd_trained/label_map.pbtxt"
-PATH_TO_SAVED_MODEL = "../models/ssd_trained/saved_model"
+PATH_TO_LABELS = "../models/final_model/label_map.pbtxt"
+PATH_TO_SAVED_MODEL = "../models/final_model/saved_model"
 
 net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
 

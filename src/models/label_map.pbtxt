@@ -77,3 +77,18 @@ item {
     id: 16
     name: 'Tree'
 }
+
+item {
+    id: 17
+    name: 'Pozo'
+}
+
+item {
+    id: 18
+    name: 'Baliza'
+}
+
+item {
+    id: 19
+    name: 'Cono'
+}
