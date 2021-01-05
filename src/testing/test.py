@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
 print("[INFO] starting cameras...")
-webcam1 = cv2.VideoCapture(0)
+webcam1 = cv2.VideoCapture(10)
 # webcam1.set(3,160)
 # webcam1.set(4,120)
 
