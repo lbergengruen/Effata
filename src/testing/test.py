@@ -12,12 +12,13 @@ import warnings
 warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
 print("[INFO] starting cameras...")
-webcam1 = cv2.VideoCapture(10)
-# webcam1.set(3,160)
-# webcam1.set(4,120)
+webcam1 = cv2.VideoCapture(0)
+webcam1.set(3,160)
+webcam1.set(4,120)
 
-time.sleep(2.0)
+#time.sleep(2.0)
 
+print("[INFO] Loading Detection Model...")
 CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person", "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
 
 PATH_TO_LABELS = "../models/final_model/label_map.pbtxt"
@@ -88,7 +89,7 @@ def detect_objects(images, net):
 
     return final_result, image_np_with_detections
 
-
+print("[INFO] Beggining...")
 while True:
     # initialize the list of frames that have been processed
     frames = []
