@@ -12,17 +12,17 @@ from object_detection.utils import label_map_util
 from openal import oalGetListener
 
 # CONSTANTS
-NTHREADS = 2                # Number of threads to be created
-cam_ports = [0, 2]          # USB Ports at which the cameras are connected
-total_time = 540            # Total time of execution
-MAX_DISTANCE_CM = 800       # Value expressed in centimeters
-MAX_ANGLE_LENSE_X = 160     # Value expressed in degrees
-MAX_ANGLE_LENSE_Y = 120     # Value expressed in degrees
-camera_offset_cm = 10       # Value expressed in centimeters
-offset_adjust = 300         # Constant Value that depends on the cameras used and lets us calculate distance
-W = 320                     # Width of the images taken by the camera
-H = 240                     # Height of the images taken by the camera
-MIN_CONFIDENCE = 0.50       # Minimum Confidence accepted from the Detection Model
+NTHREADS = 2  # Number of threads to be created
+cam_ports = [0, 2]  # USB Ports at which the cameras are connected
+total_time = 540  # Total time of execution
+MAX_DISTANCE_CM = 800  # Value expressed in centimeters
+MAX_ANGLE_LENSE_X = 160  # Value expressed in degrees
+MAX_ANGLE_LENSE_Y = 120  # Value expressed in degrees
+camera_offset_cm = 10  # Value expressed in centimeters
+offset_adjust = 300  # Constant Value that depends on the cameras used and lets us calculate distance
+W = 320  # Width of the images taken by the camera
+H = 240  # Height of the images taken by the camera
+MIN_CONFIDENCE = 0.50  # Minimum Confidence accepted from the Detection Model
 
 # MODEL INITIALIZATION
 print("[INFO] Loading Detection Model...")
@@ -44,6 +44,7 @@ category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABE
 
 def run_detection():
     images = []
+    i = 0
 
     initial = time.time()
     for idx in [0, 1]:
@@ -93,9 +94,9 @@ if __name__ == "__main__":
         run_detection()
         # run_notification()key = cv2.waitKey(1) & 0xFF
 
+        key = cv2.waitKey(1) & 0xFF
         # If the `q` key was pressed, break from the loop
         if key == ord("q"):
             break
-        
 
     print("[*] all threads finished")

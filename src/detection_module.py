@@ -57,23 +57,35 @@ def detect_objects(images, net):
 
     sources = stereo_match(final_result[0], final_result[1])
 
-    for filtered_detections in list_detections:
+    for source in sources:
         viz_utils.visualize_boxes_and_labels_on_image_array(
             image_np_with_detections,
-            np.array(filtered_detections['detection_boxes']),
-            filtered_detections['detection_classes'],
-            filtered_detections['detection_scores'],
+            np.array([source['coordinates1'], source['coordinates2']]),
+            f"{source['class']}_{source['distance']}_cm",
+            source['confidence'],
             category_index,
             use_normalized_coordinates=True,
             max_boxes_to_draw=20,
             min_score_thresh=MIN_CONFIDENCE,
             agnostic_mode=False)
 
-    return sources, image_np_with_detections
+    # for filtered_detections in list_detections:
+    #     viz_utils.visualize_boxes_and_labels_on_image_array(
+    #         image_np_with_detections,
+    #         np.array(filtered_detections['detection_boxes']),
+    #         filtered_detections['detection_classes'],
+    #         filtered_detections['detection_scores'],
+    #         category_index,
+    #         use_normalized_coordinates=True,
+    #         max_boxes_to_draw=20,
+    #         min_score_thresh=MIN_CONFIDENCE,
+    #         agnostic_mode=False)
+
+    return sources["cartesian_coords"], image_np_with_detections
 
 
 def stereo_match(left_boxes, right_boxes):
-    coords = []
+    sources = []
 
     for box1 in left_boxes:
         for box2 in right_boxes:
@@ -96,6 +108,14 @@ def stereo_match(left_boxes, right_boxes):
                     center = [x, y]
                     angles = to_polar_coords(center)
                     cartesian_coords = to_cartesian_coords(angles[0], angles[1], distance)
-                    coords.append(cartesian_coords)
 
-    return coords
+                    source = {"class": box1['class'],
+                              "confidence": max(box1['confidence'], box2['confidence']),
+                              "coordinates1": box1['coordinates'],
+                              "coordinates2": box2['coordinates'],
+                              "distance": distance,
+                              "cartesian_coords": cartesian_coords}
+
+                    sources.append(source)
+
+    return sources
