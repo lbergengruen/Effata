@@ -1,5 +1,5 @@
 # import the necessary packages
-from utils import to_polar_coords, to_cartesian_coords
+from utils import to_polar_coords, to_cartesian_coords, get_intersection_area
 from main import MIN_CONFIDENCE, CLASSES, camera_offset_cm, offset_adjust, MAX_DISTANCE_CM, H, W, category_index
 
 import math
@@ -60,7 +60,7 @@ def detect_objects(images, net):
     for source in sources:
         viz_utils.visualize_boxes_and_labels_on_image_array(
             image_np_with_detections,
-            np.array([source['coordinates1'], source['coordinates2']]),
+            np.array([source['box']]),
             f"{source['class']}_{source['distance']}_cm",
             source['confidence'],
             category_index,
@@ -111,8 +111,7 @@ def stereo_match(left_boxes, right_boxes):
 
                     source = {"class": box1['class'],
                               "confidence": max(box1['confidence'], box2['confidence']),
-                              "coordinates1": box1['coordinates'],
-                              "coordinates2": box2['coordinates'],
+                              "box": get_intersection_area(box1['coordinates'], box2['coordinates']),
                               "distance": distance,
                               "cartesian_coords": cartesian_coords}
 

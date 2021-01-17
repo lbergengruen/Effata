@@ -68,5 +68,17 @@ def check_and_merge_objects(o1, o2):
 
 def keep_significant_sources(sources):
     # In case of having to reduce the number of sources to a minimum we keep the 3 closest objects in sight
+
     sources = sorted(sources, key=lambda k: (math.sqrt(k[0] ** 2 + k[1] ** 2 + k[2] ** 2)))
     return sources[:3]
+
+def get_intersection_area(box_a, box_b):
+    # Get intersection box
+
+    x_a = max(box_a[0], box_b[0])
+    y_a = max(box_a[1], box_b[1])
+    x_b = min(box_a[2], box_b[2])
+    y_b = min(box_a[3], box_b[3])
+
+    return [x_a, y_a, x_b, y_b]
+
