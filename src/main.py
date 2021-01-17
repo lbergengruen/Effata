@@ -1,74 +1,95 @@
+# import the necessary packages
+from detection_module import detect_objects
+from notification_module import play_sound, oalGetListener
+from utils import reduce_sources
+
 import cv2
 import time
 import threading
 from threading import Condition
+import tensorflow as tf
+from object_detection.utils import label_map_util
 
-from detection_module import *
-from notification_module import *
-from utils import *
+# CONSTANTS
+NTHREADS = 2                # Number of threads to be created
+cam_ports = [0, 2]          # USB Ports at which the cameras are connected
+total_time = 540            # Total time of execution
+MAX_DISTANCE_CM = 800       # Value expressed in centimeters
+MAX_ANGLE_LENSE_X = 160     # Value expressed in degrees
+MAX_ANGLE_LENSE_Y = 120     # Value expressed in degrees
+camera_offset_cm = 10       # Value expressed in centimeters
+offset_adjust = 300         # Constant Value that depends on the cameras used and lets us calculate distance
+W = 320                     # Width of the images taken by the camera
+H = 240                     # Height of the images taken by the camera
+MIN_CONFIDENCE = 0.50       # Minimum Confidence accepted from the Detection Model
 
-#CONSTANTES
-NTHREADS = 2
-cam_ports = [0, 2]
-total_time = 540
-    
+# MODEL INITIALIZATION
+print("[INFO] Loading Detection Model...")
+CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
+           "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
 
-#def new_thread(i, sem):
+PATH_TO_LABELS = "./models/final_model/label_map.pbtxt"
+PATH_TO_SAVED_MODEL = "./models/final_model/saved_model"
+
+net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
+
+
+# def new_thread(i, sem):
 #    if i == 1:
 #        run_detection(sem)
 #    else:
 #        run_notification(sem)
 
 def run_detection():
-    i = 0
     images = []
-            
-    initial = time.time()
-    for stream in cameras:       
-        rval, frame = stream.read()
-        images.append(frame)
-            
-    coordinates, imagen = detect_objects(images, net)
-    cv2.imshow("Camera", imagen)
-    
-    sources = stereo_match(coordinates[0], coordinates[1])
-    print("Original sources: {}".format(sources))
-    #sources = reduce_sources(sources)
-    #print("Reduced sources: {}".format(sources))
-    #if (len(sources)>0):
-    #    i=i+1
-    #    print("Guardando Imagen")
-    #    cv2.imwrite(f"./result/imagen_{i}.png",imagen)
 
-    print(time.time()-initial)
+    initial = time.time()
+    for i in [0, 1]:
+        stream = cameras[i]
+        rval, frame = stream.read()
+        images.append(cv2.rotate(frame, rotations[i]))
+
+    sources, imagen = detect_objects(images, net)
+    cv2.imshow("Camera", imagen)
+
+    print("Original sources: {}".format(sources))
+    sources = reduce_sources(sources)
+    print("Reduced sources: {}".format(sources))
+    if len(sources) > 0:
+        i = i + 1
+        print(f"[INFO] Saving Image in ./result/imagen_{i}.png")
+        cv2.imwrite(f"./result/imagen_{i}.png", imagen)
+
+    print(time.time() - initial)
     print("Detected")
-            
+
+
 def run_notification():
     print("Notify")
-    for coords in sources:
-        play_sound(coords[0],coords[1],coords[2])
+    for source in sources:
+        play_sound(source[0], source[1], source[2])
 
-v = (0,0,0)
-listener = oalGetListener()
-listener.set_position(v)
 
-webcam1 = cv2.VideoCapture(cam_ports[0])
-webcam1.set(3,160)
-webcam1.set(4,120)
+if __name__ == "__main__":
+    listener = oalGetListener()
+    listener.set_position([0, 0, 0])
 
-webcam2 = cv2.VideoCapture(cam_ports[1])
-webcam2.set(3,160)
-webcam2.set(4,120)
+    cameras = []
 
-time.sleep(2.0)
-cameras = [webcam1, webcam2]
-names = ['Cam #1', 'Cam #2']
+    for port in cam_ports:
+        webcam = cv2.VideoCapture(port)
+        webcam.set(3, 120)
+        webcam.set(4, 160)
+        cameras.append(webcam)
 
-start_time = time.time()
-sources = []
+    rotations = [cv2.ROTATE_90_COUNTERCLOCKWISE, cv2.ROTATE_90_CLOCKWISE]
 
-while ((time.time() - start_time)<total_time):
-    run_detection()
-    #run_notification()
+    start_time = time.time()
+    sources = []
 
-print("[*] all threads finished")
+    while (time.time() - start_time) < total_time:
+        run_detection()
+        # run_notification()
+
+    print("[*] all threads finished")

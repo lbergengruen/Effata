@@ -1,7 +1,6 @@
-# import the necessary packages
+# Import the necessary packages
 from __future__ import print_function
 import datetime
-import time
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -9,7 +8,7 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 import warnings
 
-warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
+warnings.filterwarnings('ignore')   # Suppressing Matplotlib warnings
 
 print("[INFO] starting cameras...")
 webcam1 = cv2.VideoCapture(0)
@@ -18,8 +17,6 @@ webcam1.set(4,160)
 webcam2 = cv2.VideoCapture(2)
 webcam2.set(3,120)
 webcam2.set(4,160)
-
-#time.sleep(2.0)
 
 print("[INFO] Loading Detection Model...")
 CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person", "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
@@ -32,10 +29,7 @@ net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
 def detect_objects(images, net):
-    w = images[0].shape[1]
-    h = images[0].shape[0]
     final_result = []
-    
     image_np_with_detections = np.array(images[1]).copy()
     
     for image in images:
@@ -49,7 +43,7 @@ def detect_objects(images, net):
         detections = {key: value[0, :num_detections].numpy() for key, value in detections.items()}
         detections['num_detections'] = num_detections
 
-        # detection_classes should be ints.
+        # Detection_classes should be ints.
         detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
 
         filtered_detections={'detection_anchor_indices': [], 'detection_scores': [],
@@ -85,21 +79,18 @@ def detect_objects(images, net):
             min_score_thresh=.40,
             agnostic_mode=False)
 
-    #plt.figure(figsize=(12, 8))
-    #plt.imshow(image_np_with_detections)
-    #plt.show()
     print(final_result)
 
     return final_result, image_np_with_detections
 
 print("[INFO] Beggining...")
 while True:
-    # initialize the list of frames that have been processed
+    # Initialize the list of frames that have been processed
     frames = []
     cams = [webcam1, webcam2]
     rotations = [cv2.ROTATE_90_COUNTERCLOCKWISE, cv2.ROTATE_90_CLOCKWISE]
     
-    # loop over the frames and their respective motion detectors
+    # Loop over the frames and their respective motion detectors
     for index in [0,1]:
         rval, frame = cams[index].read()
 
@@ -113,9 +104,11 @@ while True:
     cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
     cv2.imshow("Cam", frame)
     key = cv2.waitKey(1) & 0xFF
-    # if the `q` key was pressed, break from the loop
+
+    # If the `q` key was pressed, break from the loop
     if key == ord("q"):
         break
-# do a bit of cleanup
+
+# Do a bit of cleanup
 print("[INFO] cleaning up...")
 cv2.destroyAllWindows()

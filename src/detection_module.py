@@ -1,32 +1,15 @@
 # import the necessary packages
+from utils import to_polar_coords, to_cartesian_coords
+from main import MIN_CONFIDENCE, CLASSES, camera_offset_cm, offset_adjust, MAX_DISTANCE_CM, H, W, category_index
+
 from __future__ import print_function
 import math
 import numpy as np
 import tensorflow as tf
-from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 import warnings
-warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
-# CONSTANTES
-MAX_DISTANCE_CM = 800       # Valor en Centimetros
-MAX_ANGLE_LENSE_X = 160     # Valor en grados
-MAX_ANGLE_LENSE_Y = 120     # Valor en grados
-camera_offset_cm = 10
-offset_adjust = 300
-W = 320
-H = 240
-MIN_CONFIDENCE = 0.50
-
-# MODEL INITIALIZATION
-CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
-           "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree"]
-
-PATH_TO_LABELS = "./models/ssd_trained/label_map.pbtxt"
-PATH_TO_SAVED_MODEL = "./models/ssd_trained/saved_model"
-
-net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
-category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
+warnings.filterwarnings('ignore')  # Suppress Matplotlib warnings
 
 
 def detect_objects(images, net):
@@ -44,7 +27,7 @@ def detect_objects(images, net):
         detections = {key: value[0, :num_detections].numpy() for key, value in detections.items()}
         detections['num_detections'] = num_detections
 
-        # detection_classes should be ints.
+        # Detection_classes should be ints.
         detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
 
         filtered_detections = {'detection_anchor_indices': [], 'detection_scores': [],
@@ -73,6 +56,8 @@ def detect_objects(images, net):
 
     image_np_with_detections = image_np.copy()
 
+    sources = stereo_match(final_result[0], final_result[1])
+
     for filtered_detections in list_detections:
         viz_utils.visualize_boxes_and_labels_on_image_array(
             image_np_with_detections,
@@ -85,7 +70,7 @@ def detect_objects(images, net):
             min_score_thresh=MIN_CONFIDENCE,
             agnostic_mode=False)
 
-    return final_result, image_np_with_detections
+    return sources, image_np_with_detections
 
 
 def stereo_match(left_boxes, right_boxes):
@@ -94,31 +79,24 @@ def stereo_match(left_boxes, right_boxes):
     for box1 in left_boxes:
         for box2 in right_boxes:
 
-            if box1['class']==box2['class']:
-                
-                c1 = [(box1['coordinates'][0]+box1['coordinates'][2])*H/2,(box1['coordinates'][1]+box1['coordinates'][3])*W/2]
-                c2 = [(box2['coordinates'][0]+box2['coordinates'][2])*H/2,(box2['coordinates'][1]+box2['coordinates'][3])*W/2]
-                sqr_diff=math.sqrt((c1[0]-c2[0])*(c1[0]-c2[0]) + (c1[1]-c2[1])*(c1[1]-c2[1]))
-                x = (c1[0]+c2[0])/2
-                y = (c1[1]+c2[1])/2
-                distance = camera_offset_cm/sqr_diff*offset_adjust
-                print(distance)
+            if box1['class'] == box2['class']:
+                c1 = [(box1['coordinates'][0] + box1['coordinates'][2]) * H / 2,
+                      (box1['coordinates'][1] + box1['coordinates'][3]) * W / 2]
+
+                c2 = [(box2['coordinates'][0] + box2['coordinates'][2]) * H / 2,
+                      (box2['coordinates'][1] + box2['coordinates'][3]) * W / 2]
+
+                sqr_diff = math.sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
+
+                x = (c1[0] + c2[0]) / 2
+                y = (c1[1] + c2[1]) / 2
+
+                distance = camera_offset_cm / sqr_diff * offset_adjust
+
                 if distance <= MAX_DISTANCE_CM:
-                    center = [x,y]
+                    center = [x, y]
                     angles = to_polar_coords(center)
-                    cartesian_coords = to_cartesian_coords(angles[0],angles[1], distance)
+                    cartesian_coords = to_cartesian_coords(angles[0], angles[1], distance)
                     coords.append(cartesian_coords)
 
     return coords
-
-def to_polar_coords(center):
-    im_center = [W/2, H/2]
-    angle_x = math.asin(((center[0]-im_center[0])/im_center[0])*math.sin(MAX_ANGLE_LENSE_X))
-    angle_y = math.asin(((center[1]-im_center[1])/im_center[1])*math.sin(MAX_ANGLE_LENSE_Y))
-    return [angle_x, angle_y]
-
-def to_cartesian_coords(angle_x,angle_y, distance):
-    distance_x = round((distance*(math.cos(angle_y))*(math.sin(angle_x)))/100, 3)
-    distance_y = round((distance*(math.cos(angle_y))*(math.cos(angle_x)))/100, 3)
-    distance_z = round((distance*(math.sin(angle_y)))/100, 3)
-    return [distance_x, distance_y, distance_z]
