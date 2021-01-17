@@ -4,7 +4,7 @@ from openal import WaveFile, Buffer, Source
 import math
 
 # CONSTANTS
-WAVE_FILE = WaveFile("./sounds/agudo5s.wav")
+WAVE_FILE = WaveFile("../Sound/agudo5s.wav")
 
 
 def play_sound(x, y, z):
