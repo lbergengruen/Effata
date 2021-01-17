@@ -1,5 +1,5 @@
 # Import the necessary packages
-from detection_module import W, H, MAX_ANGLE_LENSE_X, MAX_ANGLE_LENSE_Y
+from main import W, H, MAX_ANGLE_LENSE_X, MAX_ANGLE_LENSE_Y
 
 import math
 

@@ -2,7 +2,6 @@
 from utils import to_polar_coords, to_cartesian_coords
 from main import MIN_CONFIDENCE, CLASSES, camera_offset_cm, offset_adjust, MAX_DISTANCE_CM, H, W, category_index
 
-from __future__ import print_function
 import math
 import numpy as np
 import tensorflow as tf

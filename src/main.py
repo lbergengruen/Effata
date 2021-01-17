@@ -1,7 +1,7 @@
 # import the necessary packages
-from detection_module import detect_objects
-from notification_module import play_sound, oalGetListener
-from utils import reduce_sources
+from detection_module import *
+from notification_module import *
+from utils import *
 
 import cv2
 import time
@@ -9,6 +9,7 @@ import threading
 from threading import Condition
 import tensorflow as tf
 from object_detection.utils import label_map_util
+from openal import oalGetListener
 
 # CONSTANTS
 NTHREADS = 2                # Number of threads to be created
@@ -45,10 +46,10 @@ def run_detection():
     images = []
 
     initial = time.time()
-    for i in [0, 1]:
-        stream = cameras[i]
+    for idx in [0, 1]:
+        stream = cameras[idx]
         rval, frame = stream.read()
-        images.append(cv2.rotate(frame, rotations[i]))
+        images.append(cv2.rotate(frame, rotations[idx]))
 
     sources, imagen = detect_objects(images, net)
     cv2.imshow("Camera", imagen)
@@ -90,6 +91,11 @@ if __name__ == "__main__":
 
     while (time.time() - start_time) < total_time:
         run_detection()
-        # run_notification()
+        # run_notification()key = cv2.waitKey(1) & 0xFF
+
+        # If the `q` key was pressed, break from the loop
+        if key == ord("q"):
+            break
+        
 
     print("[*] all threads finished")
