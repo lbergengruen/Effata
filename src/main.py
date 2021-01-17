@@ -25,7 +25,6 @@ H = 240  # Height of the images taken by the camera
 MIN_CONFIDENCE = 0.50  # Minimum Confidence accepted from the Detection Model
 
 # MODEL INITIALIZATION
-print("[INFO] Loading Detection Model...")
 CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
            "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
 
@@ -74,11 +73,14 @@ def run_notification():
 
 
 if __name__ == "__main__":
+    print("[INFO] Loaded Detection Model...")
+    
     listener = oalGetListener()
     listener.set_position([0, 0, 0])
 
     cameras = []
-
+    
+    print("[INFO] Opening Cameras...")
     for port in cam_ports:
         webcam = cv2.VideoCapture(port)
         webcam.set(3, 120)
@@ -89,7 +91,8 @@ if __name__ == "__main__":
 
     start_time = time.time()
     sources = []
-
+    
+    print("[INFO] Starting Job")
     while (time.time() - start_time) < total_time:
         run_detection()
         # run_notification()key = cv2.waitKey(1) & 0xFF
