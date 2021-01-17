@@ -13,8 +13,11 @@ warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
 print("[INFO] starting cameras...")
 webcam1 = cv2.VideoCapture(0)
-webcam1.set(3,160)
-webcam1.set(4,120)
+webcam1.set(3,120)
+webcam1.set(4,160)
+webcam2 = cv2.VideoCapture(2)
+webcam2.set(3,120)
+webcam2.set(4,160)
 
 #time.sleep(2.0)
 
@@ -32,6 +35,8 @@ def detect_objects(images, net):
     w = images[0].shape[1]
     h = images[0].shape[0]
     final_result = []
+    
+    image_np_with_detections = np.array(images[1]).copy()
     
     for image in images:
         result = []
@@ -69,18 +74,16 @@ def detect_objects(images, net):
                                "coordinates": detections['detection_boxes'][i]})
         final_result.append(result)
 
-    image_np_with_detections = image_np.copy()
-
-    viz_utils.visualize_boxes_and_labels_on_image_array(
-        image_np_with_detections,
-        np.array(filtered_detections['detection_boxes']),
-        filtered_detections['detection_classes'],
-        filtered_detections['detection_scores'],
-        category_index,
-        use_normalized_coordinates=True,
-        max_boxes_to_draw=20,
-        min_score_thresh=.40,
-        agnostic_mode=False)
+        viz_utils.visualize_boxes_and_labels_on_image_array(
+            image_np_with_detections,
+            np.array(filtered_detections['detection_boxes']),
+            filtered_detections['detection_classes'],
+            filtered_detections['detection_scores'],
+            category_index,
+            use_normalized_coordinates=True,
+            max_boxes_to_draw=20,
+            min_score_thresh=.40,
+            agnostic_mode=False)
 
     #plt.figure(figsize=(12, 8))
     #plt.imshow(image_np_with_detections)
@@ -93,14 +96,16 @@ print("[INFO] Beggining...")
 while True:
     # initialize the list of frames that have been processed
     frames = []
-
+    cams = [webcam1, webcam2]
+    rotations = [cv2.ROTATE_90_COUNTERCLOCKWISE, cv2.ROTATE_90_CLOCKWISE]
+    
     # loop over the frames and their respective motion detectors
-    stream = webcam1
-    rval, frame = stream.read()
+    for index in [0,1]:
+        rval, frame = cams[index].read()
 
-    frames.append(frame)
+        frames.append(cv2.rotate(frame,rotations[index]))
 
-    res, frame = detect_objects([frame], net)
+    res, frame = detect_objects([frames[0],frames[1]], net)
                 
     timestamp = datetime.datetime.now()
     ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
