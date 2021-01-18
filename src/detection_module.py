@@ -1,5 +1,5 @@
 # import the necessary packages
-from utils import to_polar_coords, to_cartesian_coords, get_intersection_area
+from utils import to_polar_coords, to_cartesian_coords, get_intersection_area, reduce_sources
 from main import MIN_CONFIDENCE, CLASSES, camera_offset_cm, offset_adjust, MAX_DISTANCE_CM, H, W, category_index
 
 import math
@@ -48,7 +48,7 @@ def detect_objects(images, net):
                 filtered_detections['num_detections'] = filtered_detections['num_detections'] + 1
 
                 result.append({"class": CLASSES[detections['detection_classes'][i] - 1],
-                               "confidence": detections['detection_scores'][i] * 100,
+                               "confidence": detections['detection_scores'][i],
                                "coordinates": detections['detection_boxes'][i].tolist()})
         list_detections.append(filtered_detections)
         final_result.append(result)
@@ -56,13 +56,14 @@ def detect_objects(images, net):
     image_np_with_detections = image_np.copy()
 
     sources = stereo_match(final_result[0], final_result[1])
-
+    sources = reduce_sources(sources)
+    
     for source in sources:
         viz_utils.visualize_boxes_and_labels_on_image_array(
             image_np_with_detections,
             np.array([source['box']]),
-            f"{source['class']}_{source['distance']}_cm",
-            source['confidence'],
+            np.array([CLASSES.index(source['class'])+1]),
+            np.array([source['confidence']]),
             category_index,
             use_normalized_coordinates=True,
             max_boxes_to_draw=20,

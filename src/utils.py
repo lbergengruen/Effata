@@ -82,3 +82,13 @@ def get_intersection_area(box_a, box_b):
 
     return [x_a, y_a, x_b, y_b]
 
+def get_union_area(box_a, box_b):
+    # Get intersection box
+
+    x_a = min(box_a[0], box_b[0])
+    y_a = min(box_a[1], box_b[1])
+    x_b = max(box_a[2], box_b[2])
+    y_b = max(box_a[3], box_b[3])
+
+    return [x_a, y_a, x_b, y_b]
+

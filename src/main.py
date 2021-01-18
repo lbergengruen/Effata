@@ -41,9 +41,8 @@ category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABE
 #    else:
 #        run_notification(sem)
 
-def run_detection():
+def run_detection(i):
     images = []
-    i = 0
 
     initial = time.time()
     for idx in [0, 1]:
@@ -54,16 +53,15 @@ def run_detection():
     sources, imagen = detect_objects(images, net)
     cv2.imshow("Camera", imagen)
 
-    print("Original sources: {}".format(sources))
-    sources = reduce_sources(sources)
-    print("Reduced sources: {}".format(sources))
+    print("Sources: {}".format(sources))
+
     if len(sources) > 0:
         i = i + 1
         print(f"[INFO] Saving Image in ./result/imagen_{i}.png")
         cv2.imwrite(f"./result/imagen_{i}.png", imagen)
 
-    print(time.time() - initial)
     print("Detected")
+    return i
 
 
 def run_notification():
@@ -93,8 +91,9 @@ if __name__ == "__main__":
     sources = []
     
     print("[INFO] Starting Job")
+    i = 0
     while (time.time() - start_time) < total_time:
-        run_detection()
+        i = run_detection(i)
         # run_notification()key = cv2.waitKey(1) & 0xFF
 
         key = cv2.waitKey(1) & 0xFF
