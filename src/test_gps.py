@@ -2,6 +2,7 @@ from gps import *
 from geopy.geocoders import Nominatim
 import time
 import threading
+import osm_rg as rg
  
 gpsd = None
 class GpsPoller(threading.Thread):
@@ -23,11 +24,16 @@ try:
     
    while True:
        print(str(gpsd.fix.latitude) + "," + str(gpsd.fix.longitude) + "\n")
+       
+       city = (gpsd.fix.latitude, gpsd.fix.longitude)
+       results = rg.get(city) # default mode = 1, precision = 2
+       print(results)
+       
        #locator = Nominatim()
        #coordinates = str(gpsd.fix.longitude) + "," + str(gpsd.fix.latitude)
        #location = locator.reverse(coordinates)
        #print(location.raw)
-       time.sleep(10)
+       #time.sleep(10)
    
 except(KeyboardInterrupt,SystemExit):
    gpsp.running = False
