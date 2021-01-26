@@ -35,49 +35,79 @@ net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
 
-# def new_thread(i, sem):
-#    if i == 1:
-#        run_detection(sem)
-#    else:
-#        run_notification(sem)
+class MyThread(threading.Thread):
+    def __init__(self, thread_id, name):
+        threading.Thread.__init__(self)
+        self.thread_id = thread_id
+        self.name = name
 
-def run_detection(i):
-    images = []
+    def run(self):
+        i = 0
 
-    initial = time.time()
-    for idx in [0, 1]:
-        stream = cameras[idx]
-        rval, frame = stream.read()
-        images.append(cv2.rotate(frame, rotations[idx]))
+        print("Starting " + self.name)
+        while (time.time() - start_time) < total_time:
+            if self.thread_id == 1:
+                i = self.run_detection(i)
+            elif self.thread_id == 2:
+                self.run_notification()
+            else:
+                raise Exception(f"No thread has id: {i}")
 
-    sources, imagen = detect_objects(images, net)
-    cv2.imshow("Camera", imagen)
+            key = cv2.waitKey(1) & 0xFF
 
-    print("Sources: {}".format(sources))
+            # If the `q` key was pressed, break from the loop
+            if key == ord("q"):
+                break
 
-    if len(sources) > 0:
-        i = i + 1
-        print(f"[INFO] Saving Image in ./result/imagen_{i}.png")
-        cv2.imwrite(f"./result/imagen_{i}.png", imagen)
+        print("Exiting " + self.name)
 
-    print("Detected")
-    return i
+    def run_notification(self):
+        if not variable_lock.locked():
+            variable_lock.acquire()
 
+            print(f"{self.name}: List of Sources {sources}")
 
-def run_notification():
-    print("Notify")
-    for source in sources:
-        play_sound(source[0], source[1], source[2])
+            for source in sources:
+                play_sound(source[0], source[1], source[2])
+
+            variable_lock.release()
+        else:
+            print("%s: %s" % (self.name, time.ctime(time.time())))
+
+    def run_detection(self, i):
+
+        if not variable_lock.locked():
+            variable_lock.acquire()
+
+            images = []
+
+            for idx in [0, 1]:
+                stream = cameras[idx]
+                resp, frame = stream.read()
+                images.append(cv2.rotate(frame, rotations[idx]))
+
+            sources, image = detect_objects(images, net)
+
+            variable_lock.release()
+            cv2.imshow("Camera", image)
+
+            if len(sources) > 0:
+                i = i + 1
+                print(f"{self.name}: Saving Image in ./result/imagen_{i}.png")
+                cv2.imwrite(f"./result/imagen_{i}.png", image)
+
+        print("%s: %s" % (self.name, time.ctime(time.time())))
+        return i
 
 
 if __name__ == "__main__":
     print("[INFO] Loaded Detection Model...")
-    
+
     listener = oalGetListener()
     listener.set_position([0, 0, 0])
 
     cameras = []
-    
+
     print("[INFO] Opening Cameras...")
     for port in cam_ports:
         webcam = cv2.VideoCapture(port)
@@ -89,16 +119,24 @@ if __name__ == "__main__":
 
     start_time = time.time()
     sources = []
-    
+
     print("[INFO] Starting Job")
-    i = 0
-    while (time.time() - start_time) < total_time:
-        i = run_detection(i)
-        # run_notification()key = cv2.waitKey(1) & 0xFF
 
-        key = cv2.waitKey(1) & 0xFF
-        # If the `q` key was pressed, break from the loop
-        if key == ord("q"):
-            break
+    threads = []
 
-    print("[*] all threads finished")
+    variable_lock = threading.Lock()
+    detection_thread = MyThread(1, "Detection-Thread")
+    notification_thread = MyThread(2, "Notification-Thread")
+
+    detection_thread.start()
+    notification_thread.start()
+
+    # Add threads to thread list
+    threads.append(detection_thread)
+    threads.append(notification_thread)
+
+    # Wait for all threads to complete
+    for t in threads:
+        t.join()
+
+    print("[INFO] all threads finished")
