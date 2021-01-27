@@ -18,6 +18,8 @@ webcam2.set(3,160)
 webcam2.set(4,120)
 
 names = ['Cam #1', 'Cam #2']
+rotations = [cv2.ROTATE_90_COUNTERCLOCKWISE, cv2.ROTATE_90_CLOCKWISE]
+cameras = [webcam1, webcam2]
 
 time.sleep(2.0)
 
@@ -27,11 +29,10 @@ while True:
     frames = []
     i = 0
     # loop over the frames and their respective motion detectors
-    for stream in [webcam1, webcam2]:       
-        rval, frame = stream.read()
-        #frame = imutils.resize(frame, width=400)
-        # update the frames list
-        frames.append(frame)
+    for idx in [0, 1]:
+        stream = cameras[idx]
+        resp, frame = stream.read()
+        frames.append(cv2.rotate(frame, rotations[idx]))
     
         # increment the total number of frames read and grab the 
         # current timestamp
