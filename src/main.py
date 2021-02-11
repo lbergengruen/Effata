@@ -59,7 +59,11 @@ def run_detection(i, display):
         cv2.imshow("Camera", image)
 
         if len(sources) > 0:
-            i = i + 1
+            if i == 99:
+                i=0
+            else:
+                i = i + 1
+            
             print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
             cv2.imwrite(f"./result/imagen_{i}.png", image)
         else:
