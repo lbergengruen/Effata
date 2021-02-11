@@ -54,9 +54,15 @@ def detect_objects(images, net):
         final_result.append(result)
 
     image_np_with_detections = image_np.copy()
-
+    
+    print(f"H: {H}")
+    print(f"W: {W}")
+    
+    print(final_result)
+    
     sources = stereo_match(final_result[0], final_result[1])
-    sources = reduce_sources(sources)
+    #sources = reduce_sources(sources)
+    print(sources)
     
     for source in sources:
         viz_utils.visualize_boxes_and_labels_on_image_array(
@@ -70,18 +76,6 @@ def detect_objects(images, net):
             min_score_thresh=MIN_CONFIDENCE,
             agnostic_mode=False)
 
-    # for filtered_detections in list_detections:
-    #     viz_utils.visualize_boxes_and_labels_on_image_array(
-    #         image_np_with_detections,
-    #         np.array(filtered_detections['detection_boxes']),
-    #         filtered_detections['detection_classes'],
-    #         filtered_detections['detection_scores'],
-    #         category_index,
-    #         use_normalized_coordinates=True,
-    #         max_boxes_to_draw=20,
-    #         min_score_thresh=MIN_CONFIDENCE,
-    #         agnostic_mode=False)
-
     return [source["cartesian_coords"] for source in sources], image_np_with_detections
 
 
@@ -89,7 +83,10 @@ def stereo_match(left_boxes, right_boxes):
     sources = []
 
     for box1 in left_boxes:
-        for box2 in right_boxes:
+        candidates = []
+        distances = []
+        
+        for idx, box2 in enumerate(right_boxes):
 
             if box1['class'] == box2['class']:
                 c1 = [(box1['coordinates'][0] + box1['coordinates'][2]) * H / 2,
@@ -106,16 +103,36 @@ def stereo_match(left_boxes, right_boxes):
                 distance = camera_offset_cm / sqr_diff * offset_adjust
 
                 if distance <= MAX_DISTANCE_CM:
-                    center = [x, y]
-                    angles = to_polar_coords(center)
-                    cartesian_coords = to_cartesian_coords(angles[0], angles[1], distance)
+                    candidates.append(idx)
+                    distances.append(distance)
+        
+        if len(distances) > 0:
+            np_distances = np.array(distances)
+            index = np.argmin(np_distances)
+            best_box2 = right_boxes.pop(candidates[index])
+            best_distance = distances[index]
+            
+            c1 = [(box1['coordinates'][0] + box1['coordinates'][2]) * H / 2,
+                  (box1['coordinates'][1] + box1['coordinates'][3]) * W / 2]
 
-                    source = {"class": box1['class'],
-                              "confidence": max(box1['confidence'], box2['confidence']),
-                              "box": get_intersection_area(box1['coordinates'], box2['coordinates']),
-                              "distance": distance,
-                              "cartesian_coords": cartesian_coords}
+            c2 = [(best_box2['coordinates'][0] + best_box2['coordinates'][2]) * H / 2,
+                  (best_box2['coordinates'][1] + best_box2['coordinates'][3]) * W / 2]
 
-                    sources.append(source)
+            sqr_diff = math.sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
+
+            y = (c1[0] + c2[0]) / 2
+            x = (c1[1] + c2[1]) / 2
+            
+            center = [x, y]
+            angles = to_polar_coords(center)
+            cartesian_coords = to_cartesian_coords(angles[0], angles[1], best_distance)
+
+            source = {"class": box1['class'],
+                      "confidence": max(box1['confidence'], best_box2['confidence']),
+                      "box": best_box2['coordinates'],
+                      "distance": best_distance,
+                      "cartesian_coords": cartesian_coords}
+
+            sources.append(source)
 
     return sources
