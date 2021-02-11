@@ -1,7 +1,11 @@
 #!/bin/sh
 # launcher.sh
 
+# xhost +
+# xhost local:root
+
 # GPS CONFIG
+echo GPS CONFIG
 sudo systemctl stop gpsd.socket
 sudo gpsd /dev/serial0 -F /var/run/gpsd.sock
 
@@ -11,7 +15,8 @@ sudo gpsd /dev/serial0 -F /var/run/gpsd.sock
 
 # navigate to home directory, then to this directory, then execute python script, then back home
 
-cd /
+# cd /
+echo Running main
 cd /home/pi/Desktop/Effata/src
-sudo LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libatomic.so.1 python3 main.py
-cd /
+sudo -u pi LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libatomic.so.1 python3 main.py
+# cd /

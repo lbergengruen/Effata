@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings('ignore')  # Suppress Matplotlib warnings
 
 
-def detect_objects(images, net):
+def detect_objects(images, net, display):
     final_result = []
     list_detections = []
 
@@ -55,26 +55,21 @@ def detect_objects(images, net):
 
     image_np_with_detections = image_np.copy()
     
-    print(f"H: {H}")
-    print(f"W: {W}")
-    
-    print(final_result)
-    
     sources = stereo_match(final_result[0], final_result[1])
     #sources = reduce_sources(sources)
-    print(sources)
     
-    for source in sources:
-        viz_utils.visualize_boxes_and_labels_on_image_array(
-            image_np_with_detections,
-            np.array([source['box']]),
-            np.array([CLASSES.index(source['class'])+1]),
-            np.array([source['confidence']]),
-            category_index,
-            use_normalized_coordinates=True,
-            max_boxes_to_draw=20,
-            min_score_thresh=MIN_CONFIDENCE,
-            agnostic_mode=False)
+    if display:
+        for source in sources:
+            viz_utils.visualize_boxes_and_labels_on_image_array(
+                image_np_with_detections,
+                np.array([source['box']]),
+                np.array([CLASSES.index(source['class'])+1]),
+                np.array([source['confidence']]),
+                category_index,
+                use_normalized_coordinates=True,
+                max_boxes_to_draw=20,
+                min_score_thresh=MIN_CONFIDENCE,
+                agnostic_mode=False)
 
     return [source["cartesian_coords"] for source in sources], image_np_with_detections
 

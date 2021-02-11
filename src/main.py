@@ -15,7 +15,7 @@ from openal import oalGetListener
 NTHREADS = 2  # Number of threads to be created
 cam_ports = [0, 2]  # USB Ports at which the cameras are connected
 total_time = 600  # Total time of execution
-MAX_DISTANCE_CM = 1200  # Value expressed in centimeters
+MAX_DISTANCE_CM = 800  # Value expressed in centimeters
 MAX_ANGLE_LENSE_X = 160  # Value expressed in degrees
 MAX_ANGLE_LENSE_Y = 120  # Value expressed in degrees
 camera_offset_cm = 10  # Value expressed in centimeters
@@ -39,12 +39,12 @@ def run_notification(sources):
     print(f"Notification-Step: List of Sources {sources}")
 
     for source in sources:
-        play_sound(3*source[0], source[1], source[2])
+        play_sound(3*source[0], source[1]/2, 0)
         
     print("%s: %s" % ("Notification-Step", time.ctime(time.time())))
 
 
-def run_detection(i):
+def run_detection(i, display):
 
     images = []
 
@@ -53,22 +53,26 @@ def run_detection(i):
         resp, frame = stream.read()
         images.append(cv2.rotate(frame, rotations[idx]))
 
-    sources, image = detect_objects(images, net)
+    sources, image = detect_objects(images, net, display)
 
-    cv2.imshow("Camera", image)
+    if display:
+        cv2.imshow("Camera", image)
 
-    if len(sources) > 0:
-        i = i + 1
-        print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
-        cv2.imwrite(f"./result/imagen_{i}.png", image)
-    else:
-        print(f"Detection-Step: No Objects Detected.")
-        
+        if len(sources) > 0:
+            i = i + 1
+            print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
+            cv2.imwrite(f"./result/imagen_{i}.png", image)
+        else:
+            print(f"Detection-Step: No Objects Detected.")
+            
+
     print("%s: %s" % ("Detection-Step", time.ctime(time.time())))
     return sources, i
 
 
 if __name__ == "__main__":
+    display = False
+    
     print("[INFO] Loading Detection Model...")
     net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
     
@@ -93,7 +97,7 @@ if __name__ == "__main__":
     i = 0
 
     while (time.time() - start_time) < total_time:
-        sources, i = run_detection(i)
+        sources, i = run_detection(i, display)
         run_notification(sources)
 
         key = cv2.waitKey(1) & 0xFF
