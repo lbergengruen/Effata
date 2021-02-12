@@ -30,6 +30,7 @@ CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "H
 
 PATH_TO_LABELS = "./models/final_model/label_map.pbtxt"
 PATH_TO_SAVED_MODEL = "./models/final_model/saved_model"
+PATH_TO_TFLITE_MODEL = "./models/final_model/model2.tflite"
 
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
@@ -54,6 +55,7 @@ def run_detection(i, display):
         images.append(cv2.rotate(frame, rotations[idx]))
 
     sources, image = detect_objects(images, net, display)
+    #sources, image = detect_objects(images, interpreter, display)
 
     if display:
         cv2.imshow("Camera", image)
@@ -78,7 +80,13 @@ if __name__ == "__main__":
     display = False
     
     print("[INFO] Loading Detection Model...")
+    
+    # Using TF MODEL
     net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+    
+    # USING TFLITE MODEL
+    #interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
+    #interpreter.allocate_tensors()
     
     listener = oalGetListener()
     listener.set_position([0, 0, 0])
@@ -88,8 +96,8 @@ if __name__ == "__main__":
     print("[INFO] Opening Cameras...")
     for port in cam_ports:
         webcam = cv2.VideoCapture(port)
-        webcam.set(3, 120)
-        webcam.set(4, 160)
+        webcam.set(3, 160)
+        webcam.set(4, 120)
         cameras.append(webcam)
 
     rotations = [cv2.ROTATE_180, cv2.ROTATE_180]
