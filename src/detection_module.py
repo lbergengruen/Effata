@@ -84,7 +84,7 @@ def detect_objects(images, net, display):
                 min_score_thresh=MIN_CONFIDENCE,
                 agnostic_mode=False)
 
-    return [source["cartesian_coords"] for source in sources], image_np_with_detections
+    return sources, image_np_with_detections
 
 
 def stereo_match(left_boxes, right_boxes):

@@ -36,17 +36,19 @@ category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABE
 
 
 def run_notification(sources):
-
-    print(f"Notification-Step: List of Sources {sources}")
+    coords = [source["cartesian_coords"] for source in sources]
+    print(f"Notification-Step: List of Sources {coords}")
 
     for source in sources:
-        play_sound(3*source[0], source[1]/2, 0)
-        
+        if source["class"] =! "Pozo":
+            play_sound(3 * source["cartesian_coords"][0], source["cartesian_coords"][1] / 2, 0)
+        else:
+            play_pozo_sound(3 * source["cartesian_coords"][0], source["cartesian_coords"][1] / 2, 0)
+
     print("%s: %s" % ("Notification-Step", time.ctime(time.time())))
 
 
 def run_detection(i, display):
-
     images = []
 
     for idx in [0, 1]:
@@ -55,22 +57,21 @@ def run_detection(i, display):
         images.append(cv2.rotate(frame, rotations[idx]))
 
     sources, image = detect_objects(images, net, display)
-    #sources, image = detect_objects(images, interpreter, display)
+    # sources, image = detect_objects(images, interpreter, display)
 
     if display:
         cv2.imshow("Camera", image)
 
         if len(sources) > 0:
             if i == 99:
-                i=0
+                i = 0
             else:
                 i = i + 1
-            
+
             print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
             cv2.imwrite(f"./result/imagen_{i}.png", image)
         else:
             print(f"Detection-Step: No Objects Detected.")
-            
 
     print("%s: %s" % ("Detection-Step", time.ctime(time.time())))
     return sources, i
@@ -78,16 +79,16 @@ def run_detection(i, display):
 
 if __name__ == "__main__":
     display = False
-    
+
     print("[INFO] Loading Detection Model...")
-    
+
     # Using TF MODEL
     net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
-    
+
     # USING TFLITE MODEL
-    #interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
-    #interpreter.allocate_tensors()
-    
+    # interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
+    # interpreter.allocate_tensors()
+
     listener = oalGetListener()
     listener.set_position([0, 0, 0])
 
@@ -105,7 +106,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     print("[INFO] Starting Job")
-    
+
     i = 0
 
     while (time.time() - start_time) < total_time:
@@ -118,5 +119,4 @@ if __name__ == "__main__":
         if key == ord("q"):
             break
 
-    
     print("[INFO] Job Finished")
