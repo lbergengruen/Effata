@@ -40,7 +40,7 @@ def run_notification(sources):
     print(f"Notification-Step: List of Sources {coords}")
 
     for source in sources:
-        if source["class"] =! "Pozo":
+        if source["class"] != "Pozo":
             play_sound(3 * source["cartesian_coords"][0], source["cartesian_coords"][1] / 2, 0)
         else:
             play_pozo_sound(3 * source["cartesian_coords"][0], source["cartesian_coords"][1] / 2, 0)
