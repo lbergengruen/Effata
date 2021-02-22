@@ -13,8 +13,8 @@ from openal import oalGetListener
 
 # CONSTANTS
 NTHREADS = 2  # Number of threads to be created
-cam_ports = [0, 2]  # USB Ports at which the cameras are connected
-total_time = 600  # Total time of execution
+cam_ports = [1,2]  # USB Ports at which the cameras are connected
+total_time = 1200  # Total time of execution
 MAX_DISTANCE_CM = 800  # Value expressed in centimeters
 MAX_ANGLE_LENSE_X = 160  # Value expressed in degrees
 MAX_ANGLE_LENSE_Y = 120  # Value expressed in degrees
@@ -29,8 +29,8 @@ CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "H
            "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
 
 PATH_TO_LABELS = "./models/final_model/label_map.pbtxt"
-PATH_TO_SAVED_MODEL = "./models/final_model/saved_model"
-PATH_TO_TFLITE_MODEL = "./models/final_model/model2.tflite"
+#PATH_TO_SAVED_MODEL = "./models/final_model/saved_model"
+PATH_TO_TFLITE_MODEL = "./models/final_model/final_model.tflite"
 
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
@@ -54,8 +54,8 @@ def run_detection(i, display):
         resp, frame = stream.read()
         images.append(cv2.rotate(frame, rotations[idx]))
 
-    sources, image = detect_objects(images, net, display)
-    #sources, image = detect_objects(images, interpreter, display)
+    #sources, image = detect_objects(images, net, display)
+    sources, image = detect_objects(images, interpreter, display)
 
     if display:
         cv2.imshow("Camera", image)
@@ -82,11 +82,11 @@ if __name__ == "__main__":
     print("[INFO] Loading Detection Model...")
     
     # Using TF MODEL
-    net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+    #net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
     
     # USING TFLITE MODEL
-    #interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
-    #interpreter.allocate_tensors()
+    interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
+    interpreter.allocate_tensors()
     
     listener = oalGetListener()
     listener.set_position([0, 0, 0])

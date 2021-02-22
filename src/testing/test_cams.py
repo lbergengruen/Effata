@@ -9,7 +9,7 @@ import cv2
 
 # initialize the video streams and allow them to warmup
 print("[INFO] starting cameras...")
-webcam1 = cv2.VideoCapture(0)
+webcam1 = cv2.VideoCapture(1)
 webcam1.set(3,160)
 webcam1.set(4,120)
 

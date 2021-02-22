@@ -17,23 +17,28 @@ def detect_objects(images, net, display):
 
     for image in images:
         result = []
-        image_np = np.array(image)
+        
+        #try:
+        image_np = np.array(image).astype(np.uint8)
+        #except:
+        #    print("Image ERROR")
+        #    return [], []
         
         # TF MODEL
         input_tensor = tf.convert_to_tensor(image_np)
         input_tensor = input_tensor[tf.newaxis, ...]
-        detections = net(input_tensor)
+        #detections = net(input_tensor)
         
         # TFLITE MODEL
-        #input_details = net.get_input_details()
-        #output_details = net.get_output_details()
-        #print(input_details[0]['shape'])
-        #print(output_details[0]['shape'])
-        #print(image_np.shape)
-        ##net.set_tensor(input_details[0]['index'], input_tensor)
+        input_details = net.get_input_details()
+        output_details = net.get_output_details()
+        print(input_details[0]['shape'])
+        print(output_details[0]['shape'])
+        print(image_np.shape)
+        net.set_tensor(input_details[0]['index'], input_tensor)
         #net.set_tensor([1,240,320,3], input_tensor)
-        #net.invoke()
-        #output_data = net.get_tensor(output_details[0]['index'])
+        net.invoke()
+        output_data = net.get_tensor(output_details[0]['index'])
 
         num_detections = int(detections.pop('num_detections'))
         detections = {key: value[0, :num_detections].numpy() for key, value in detections.items()}

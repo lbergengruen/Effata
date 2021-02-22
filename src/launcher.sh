@@ -18,5 +18,5 @@ sudo gpsd /dev/serial0 -F /var/run/gpsd.sock
 # cd /
 echo Running main
 cd /home/pi/Desktop/Effata/src
-sudo -u pi LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libatomic.so.1 python3 main.py
+#sudo -u pi LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libatomic.so.1 python3 main.py
 # cd /
