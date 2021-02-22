@@ -19,6 +19,17 @@ def play_sound(x, y, z):
     gradual_beep_long(source)
 
 
+def play_pozo_sound(x, y, z):
+    buffer = Buffer(WAVE_FILE)
+    source = Source(buffer)
+
+    source.set_source_relative(True)
+    v1 = (x, y, z)
+    source.set_position(v1)
+    pitch = 0.2
+    source.set_pitch(pitch)
+    gradual_beep_long(source)
+
 # def beep_beep(source):
 #     source.play()
 #     time.sleep(0.1)
