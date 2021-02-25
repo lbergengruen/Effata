@@ -100,7 +100,7 @@ if __name__ == "__main__":
     for port in cam_ports:
         webcam = cv2.VideoCapture(port)
         webcam.set(3, 120)
-        #webcam.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
+        webcam.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
         cameras.append(webcam)
 
     rotations = [cv2.ROTATE_180, cv2.ROTATE_180]
