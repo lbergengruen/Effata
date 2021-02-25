@@ -13,7 +13,7 @@ from openal import oalGetListener
 
 # CONSTANTS
 NTHREADS = 2  # Number of threads to be created
-cam_ports = [1,2]  # USB Ports at which the cameras are connected
+cam_ports = [0,2]  # USB Ports at which the cameras are connected
 total_time = 1200  # Total time of execution
 MAX_DISTANCE_CM = 800  # Value expressed in centimeters
 MAX_ANGLE_LENSE_X = 160  # Value expressed in degrees
@@ -28,9 +28,9 @@ MIN_CONFIDENCE = 0.50  # Minimum Confidence accepted from the Detection Model
 CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
            "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
 
-PATH_TO_LABELS = "./models/final_model/label_map.pbtxt"
-#PATH_TO_SAVED_MODEL = "./models/final_model/saved_model"
-PATH_TO_TFLITE_MODEL = "./models/final_model/final_model.tflite"
+PATH_TO_LABELS = "./models/last_model/label_map.pbtxt"
+PATH_TO_SAVED_MODEL = "./models/last_model/saved_model"
+PATH_TO_TFLITE_MODEL = "./models/last_model/model2.tflite"
 
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
@@ -56,8 +56,8 @@ def run_detection(i, display):
         resp, frame = stream.read()
         images.append(cv2.rotate(frame, rotations[idx]))
 
-    #sources, image = detect_objects(images, net, display)
-    sources, image = detect_objects(images, interpreter, display)
+    sources, image = detect_objects(images, net, display)
+    #sources, image = detect_objects(images, interpreter, display)
 
 
     if display:
@@ -84,11 +84,11 @@ if __name__ == "__main__":
     print("[INFO] Loading Detection Model...")
 
     # Using TF MODEL
-    #net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+    net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
     
     # USING TFLITE MODEL
-    interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
-    interpreter.allocate_tensors()
+    #interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
+    #interpreter.allocate_tensors()
     
 
     listener = oalGetListener()
@@ -99,8 +99,8 @@ if __name__ == "__main__":
     print("[INFO] Opening Cameras...")
     for port in cam_ports:
         webcam = cv2.VideoCapture(port)
-        webcam.set(3, 160)
-        webcam.set(4, 120)
+        webcam.set(3, 120)
+        #webcam.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
         cameras.append(webcam)
 
     rotations = [cv2.ROTATE_180, cv2.ROTATE_180]
