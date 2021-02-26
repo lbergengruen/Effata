@@ -13,8 +13,11 @@ sudo gpsd /dev/serial0 -F /var/run/gpsd.sock
 # sudo systemctl disable serial-getty@ttyS0.service
 # sudo systemctl stop serial-getty@ttyS0.service
 
-# navigate to home directory, then to this directory, then execute python script, then back home
+# Prepare usb cameras
+sudo rmmod uvcvideo
+sudo modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
 
+# navigate to home directory, then to this directory, then execute python script, then back home
 # cd /
 echo Running main
 cd /home/pi/Desktop/Effata/src

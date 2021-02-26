@@ -13,7 +13,6 @@ from openal import oalGetListener
 
 # CONSTANTS
 NTHREADS = 2  # Number of threads to be created
-cam_ports = [0,2]  # USB Ports at which the cameras are connected
 total_time = 1200  # Total time of execution
 MAX_DISTANCE_CM = 800  # Value expressed in centimeters
 MAX_ANGLE_LENSE_X = 160  # Value expressed in degrees
@@ -97,11 +96,18 @@ if __name__ == "__main__":
     cameras = []
 
     print("[INFO] Opening Cameras...")
-    for port in cam_ports:
+    for port in [0, 2]:
         webcam = cv2.VideoCapture(port)
+        
+        #if not (cap.isOpened()):
+        #    print(f"Could not open video device in port {port}")
+        #else:
         webcam.set(3, 120)
         webcam.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
         cameras.append(webcam)
+        time.sleep(3)
+        #except:
+        #    print(f"There is no camera in port: {port}")
 
     rotations = [cv2.ROTATE_180, cv2.ROTATE_180]
 
@@ -119,6 +125,8 @@ if __name__ == "__main__":
 
         # If the `q` key was pressed, break from the loop
         if key == ord("q"):
+            for cap in cameras:
+                cap.release()
             break
 
     print("[INFO] Job Finished")
