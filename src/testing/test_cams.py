@@ -9,16 +9,20 @@ import cv2
 
 # initialize the video streams and allow them to warmup
 print("[INFO] starting cameras...")
-webcam1 = cv2.VideoCapture(1)
-webcam1.set(3,160)
-webcam1.set(4,120)
+#webcam1 = cv2.VideoCapture(0)
+#webcam1.set(3,160)
+#webcam1.set(4,120)
+webcam1 = VideoStream(src=0).start()
+webcam1.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 120)
 
-webcam2 = cv2.VideoCapture(2)
-webcam2.set(3,160)
-webcam2.set(4,120)
+#webcam2 = cv2.VideoCapture(2)
+#webcam2.set(3,160)
+#webcam2.set(4,120)
+webcam2 = VideoStream(src=2).start()
+webcam2.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 120)
 
 names = ['Cam #1', 'Cam #2']
-rotations = [cv2.ROTATE_90_COUNTERCLOCKWISE, cv2.ROTATE_90_CLOCKWISE]
+rotations = [cv2.ROTATE_180, cv2.ROTATE_180]
 cameras = [webcam1, webcam2]
 
 time.sleep(2.0)
@@ -29,11 +33,12 @@ while True:
     frames = []
     i = 0
     # loop over the frames and their respective motion detectors
-    for idx in [0, 1]:
+    for idx in [0,1]:
         stream = cameras[idx]
-        resp, frame = stream.read()
-        frames.append(cv2.rotate(frame, rotations[idx]))
-    
+        frame = stream.read()
+        frame = cv2.rotate(frame, rotations[idx]) 
+        frames.append(frame)
+           
         # increment the total number of frames read and grab the 
         # current timestamp
         

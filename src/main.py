@@ -10,6 +10,8 @@ from threading import Condition
 import tensorflow as tf
 from object_detection.utils import label_map_util
 from openal import oalGetListener
+from imutils.video import VideoStream
+import imutils
 
 # CONSTANTS
 NTHREADS = 2  # Number of threads to be created
@@ -52,7 +54,8 @@ def run_detection(i, display):
 
     for idx in [0, 1]:
         stream = cameras[idx]
-        resp, frame = stream.read()
+        frame = stream.read()
+        frame = imutils.resize(frame, height=240, width=320)
         images.append(cv2.rotate(frame, rotations[idx]))
 
     sources, image = detect_objects(images, net, display)
@@ -97,15 +100,15 @@ if __name__ == "__main__":
 
     print("[INFO] Opening Cameras...")
     for port in [0, 2]:
-        webcam = cv2.VideoCapture(port)
+        #webcam = cv2.VideoCapture(port)
+        webcam = VideoStream(src=port).start()
+        webcam.stream.set(3, 120)
+        #webcam.stream.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
         
-        #if not (cap.isOpened()):
-        #    print(f"Could not open video device in port {port}")
-        #else:
-        webcam.set(3, 120)
-        webcam.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
+        #webcam.set(3, 120)
+        #webcam.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
         cameras.append(webcam)
-        time.sleep(3)
+        #time.sleep(3)
         #except:
         #    print(f"There is no camera in port: {port}")
 
