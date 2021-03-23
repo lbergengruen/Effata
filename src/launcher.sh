@@ -21,5 +21,5 @@ sudo modprobe uvcvideo nodrop=1 timeout=5000 quirks=0x80
 # cd /
 echo Running main
 cd /home/pi/Desktop/Effata/src
-#sudo -u pi LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libatomic.so.1 python3 main.py
+sudo -u pi LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libatomic.so.1 python3 main.py
 # cd /

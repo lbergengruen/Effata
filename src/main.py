@@ -4,6 +4,7 @@ from notification_module import *
 from utils import *
 
 import cv2
+import queue
 import time
 import threading
 from threading import Condition
@@ -23,7 +24,7 @@ camera_offset_cm = 10  # Value expressed in centimeters
 offset_adjust = 300  # Constant Value that depends on the cameras used and lets us calculate distance
 W = 320  # Width of the images taken by the camera
 H = 240  # Height of the images taken by the camera
-MIN_CONFIDENCE = 0.50  # Minimum Confidence accepted from the Detection Model
+MIN_CONFIDENCE = 0.5  # Minimum Confidence accepted from the Detection Model
 
 # MODEL INITIALIZATION
 CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
@@ -31,9 +32,39 @@ CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "H
 
 PATH_TO_LABELS = "./models/last_model/label_map.pbtxt"
 PATH_TO_SAVED_MODEL = "./models/last_model/saved_model"
-PATH_TO_TFLITE_MODEL = "./models/last_model/model2.tflite"
+PATH_TO_TFLITE_MODEL = "./models/last_model/model.tflite"
 
 category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
+
+
+# bufferless VideoCapture
+class VideoCapture:
+
+  def __init__(self, name):
+    webcam = cv2.VideoCapture(name)
+    webcam.set(3, 120)
+    webcam.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
+    self.cap = webcam
+    self.q = queue.Queue()
+    t = threading.Thread(target=self._reader)
+    t.daemon = True
+    t.start()
+
+  # read frames as soon as they are available, keeping only most recent one
+  def _reader(self):
+    while True:
+      ret, frame = self.cap.read()
+      if not ret:
+        break
+      if not self.q.empty():
+        try:
+          self.q.get_nowait()   # discard previous (unprocessed) frame
+        except Queue.Empty:
+          pass
+      self.q.put(frame)
+
+  def read(self):
+    return self.q.get()
 
 
 def run_notification(sources):
@@ -46,7 +77,7 @@ def run_notification(sources):
         else:
             play_pozo_sound(3 * source["cartesian_coords"][0], source["cartesian_coords"][1] / 2, 0)
 
-    print("%s: %s" % ("Notification-Step", time.ctime(time.time())))
+    #print("%s: %s" % ("Notification-Step", time.ctime(time.time())))
 
 
 def run_detection(i, display):
@@ -58,8 +89,7 @@ def run_detection(i, display):
         frame = imutils.resize(frame, height=240, width=320)
         images.append(cv2.rotate(frame, rotations[idx]))
 
-    sources, image = detect_objects(images, net, display)
-    #sources, image = detect_objects(images, interpreter, display)
+    sources, image = detect_objects_tf(images, interpreter, display)
 
 
     if display:
@@ -71,22 +101,20 @@ def run_detection(i, display):
             else:
                 i = i + 1
 
-            print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
-            cv2.imwrite(f"./result/imagen_{i}.png", image)
+            #print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
+            #cv2.imwrite(f"./result/imagen_{i}.png", image)
         else:
             print(f"Detection-Step: No Objects Detected.")
 
-    print("%s: %s" % ("Detection-Step", time.ctime(time.time())))
     return sources, i
 
 
 if __name__ == "__main__":
-    display = False
+    display = True
 
     print("[INFO] Loading Detection Model...")
-
     # Using TF MODEL
-    net = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+    interpreter = tf.saved_model.load(PATH_TO_SAVED_MODEL)
     
     # USING TFLITE MODEL
     #interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
@@ -99,19 +127,12 @@ if __name__ == "__main__":
     cameras = []
 
     print("[INFO] Opening Cameras...")
-    for port in [0, 2]:
-        #webcam = cv2.VideoCapture(port)
-        webcam = VideoStream(src=port).start()
-        webcam.stream.set(3, 120)
-        #webcam.stream.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
-        
-        #webcam.set(3, 120)
-        #webcam.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
+    for port in [0, 2]:        
+        webcam = VideoCapture(port)
         cameras.append(webcam)
-        #time.sleep(3)
-        #except:
-        #    print(f"There is no camera in port: {port}")
-
+    
+    time.sleep(2)
+    
     rotations = [cv2.ROTATE_180, cv2.ROTATE_180]
 
     start_time = time.time()
@@ -121,11 +142,15 @@ if __name__ == "__main__":
     i = 0
 
     while (time.time() - start_time) < total_time:
+        start_det_time = time.time()
         sources, i = run_detection(i, display)
+        print(f"Detection took: {time.time() - start_det_time} s")
+        start_not_time = time.time()
         run_notification(sources)
+        print(f"Notification took: {time.time() - start_det_time} s")
 
         key = cv2.waitKey(1) & 0xFF
-
+        
         # If the `q` key was pressed, break from the loop
         if key == ord("q"):
             for cap in cameras:
