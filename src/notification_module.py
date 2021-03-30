@@ -30,28 +30,47 @@ def play_pozo_sound(x, y, z):
     source.set_pitch(pitch)
     gradual_beep_long(source)
 
-# def beep_beep(source):
-#     source.play()
-#     time.sleep(0.1)
-#     source.stop()
-#     time.sleep(0.05)
-#     source.play()
-#     time.sleep(0.1)
-#     source.stop()
-#
-#
-# def gradual_beep_short(source):
-#     source.play()
-#     gain = source.gain
-#
-#     while gain > 0.02:
-#         source.set_gain(gain)
-#         gain = gain - (gain / 1.6)
-#         time.sleep(0.05)
-#
-#     source.set_gain(0.0)
-#     time.sleep(0.7)
-#     source.stop()
+
+def play_start_sound():
+    buffer = Buffer(WAVE_FILE)
+    source = Source(buffer)
+
+    source.set_source_relative(True)
+    sources = [(-4,0,0), (-2,2,0), (0, 4, 0), (2,2,0), (4,0,0)]
+    pitch = 0.2
+    for s in sources:
+        source.set_position(s)
+        source.set_pitch(pitch)
+        pitch = pitch*1.25
+        beep(source)
+
+def beep_beep(source):
+    source.play()
+    time.sleep(0.2)
+    source.stop()
+    time.sleep(0.1)
+    source.play()
+    time.sleep(0.2)
+    source.stop()
+    
+def beep(source):
+    source.play()
+    time.sleep(0.2)
+    source.stop()
+    time.sleep(0.1)
+
+def gradual_beep_short(source):
+    source.play()
+    gain = source.gain
+    
+    while gain > 0.02:
+        source.set_gain(gain)
+        gain = gain - (gain / 1.6)
+        time.sleep(0.05)
+        
+    source.set_gain(0.0)
+    time.sleep(0.7)
+    source.stop()
 
 
 def gradual_beep_long(source):

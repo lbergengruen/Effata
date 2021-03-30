@@ -53,6 +53,7 @@ class VideoCapture:
   # read frames as soon as they are available, keeping only most recent one
   def _reader(self):
     while True:
+      time.sleep(0.5)
       ret, frame = self.cap.read()
       if not ret:
         break
@@ -110,8 +111,13 @@ def run_detection(i, display):
 
 
 if __name__ == "__main__":
-    display = True
-
+    display = False
+    
+    listener = oalGetListener()
+    listener.set_position([0, 0, 0])
+    
+    play_start_sound()
+    
     print("[INFO] Loading Detection Model...")
     # Using TF MODEL
     interpreter = tf.saved_model.load(PATH_TO_SAVED_MODEL)
@@ -119,10 +125,6 @@ if __name__ == "__main__":
     # USING TFLITE MODEL
     #interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
     #interpreter.allocate_tensors()
-    
-
-    listener = oalGetListener()
-    listener.set_position([0, 0, 0])
 
     cameras = []
 
@@ -139,6 +141,8 @@ if __name__ == "__main__":
 
     print("[INFO] Starting Job")
 
+    play_start_sound()
+
     i = 0
 
     while (time.time() - start_time) < total_time:
@@ -154,7 +158,7 @@ if __name__ == "__main__":
         # If the `q` key was pressed, break from the loop
         if key == ord("q"):
             for cap in cameras:
-                cap.release()
+                cap.stop()
             break
 
     print("[INFO] Job Finished")
