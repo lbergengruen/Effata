@@ -158,7 +158,7 @@ if __name__ == "__main__":
         # If the `q` key was pressed, break from the loop
         if key == ord("q"):
             for cap in cameras:
-                cap.stop()
+                cap.release()
             break
 
     print("[INFO] Job Finished")
