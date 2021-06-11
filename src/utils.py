@@ -1,6 +1,7 @@
-# Import the necessary packages
+# Import the necessary modules
 from main import W, H, MAX_ANGLE_LENSE_X, MAX_ANGLE_LENSE_Y
 
+# Import the necessary packages
 import math
 
 # CONSTANTS
@@ -9,7 +10,6 @@ e = 0.25  # All objects inside of a circle of radios 45 degrees will be consider
 
 def to_polar_coords(center):
     # Translate image coordinates into polar coordinates inside of the image.
-
     im_center = [W / 2, H / 2]
     angle_x = math.asin(((center[0] - im_center[0]) / im_center[0]) * math.sin(MAX_ANGLE_LENSE_X))
     angle_y = math.asin(((center[1] - im_center[1]) / im_center[1]) * math.sin(MAX_ANGLE_LENSE_Y))
@@ -18,7 +18,6 @@ def to_polar_coords(center):
 
 def to_cartesian_coords(angle_x, angle_y, distance):
     # Translate the vision angles into global cartesian coordinates.
-
     distance_x = round((distance * (math.cos(angle_y)) * (math.sin(angle_x))) / 100, 3)
     distance_y = round((distance * (math.cos(angle_y)) * (math.cos(angle_x))) / 100, 3)
     distance_z = round((distance * (math.sin(angle_y))) / 100, 3)
@@ -28,7 +27,6 @@ def to_cartesian_coords(angle_x, angle_y, distance):
 def reduce_sources(sources):
     # If two objects are very close to each other, a single sound may be enough to alert the user, so the objects are
     # merged as one. We will only accept a maximum of 3 objects per time.
-
     for o1 in sources:
         for o2 in sources:
             if o1 != o2:
@@ -46,7 +44,6 @@ def reduce_sources(sources):
 
 def check_and_merge_objects(o1, o2):
     # Check if these two objects are so close to each other that can be notified as a single obstacle.
-
     r1 = math.sqrt(o1[0] ** 2 + o1[1] ** 2 + o1[2] ** 2)
     t1 = math.atan2(o1[1], o1[0])
     f1 = math.acos(o1[2] / r1)
@@ -68,13 +65,12 @@ def check_and_merge_objects(o1, o2):
 
 def keep_significant_sources(sources):
     # In case of having to reduce the number of sources to a minimum we keep the 3 closest objects in sight
-
     sources = sorted(sources, key=lambda k: (math.sqrt(k[0] ** 2 + k[1] ** 2 + k[2] ** 2)))
     return sources[:3]
 
+
 def get_intersection_area(box_a, box_b):
     # Get intersection box
-
     x_a = max(box_a[0], box_b[0])
     y_a = max(box_a[1], box_b[1])
     x_b = min(box_a[2], box_b[2])
@@ -82,13 +78,12 @@ def get_intersection_area(box_a, box_b):
 
     return [x_a, y_a, x_b, y_b]
 
+
 def get_union_area(box_a, box_b):
     # Get intersection box
-
     x_a = min(box_a[0], box_b[0])
     y_a = min(box_a[1], box_b[1])
     x_b = max(box_a[2], box_b[2])
     y_b = max(box_a[3], box_b[3])
 
     return [x_a, y_a, x_b, y_b]
-

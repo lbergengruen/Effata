@@ -67,9 +67,11 @@ class VideoCapture:
         return self.q.get()
 
 
-def run_notification(sources):
+def run_notification(sources, debug):
     coords = [source["cartesian_coords"] for source in sources]
-    print(f"Notification-Step: List of Sources {coords}")
+
+    if debug:
+        print(f"Notification-Step: List of Sources {coords}")
 
     for source in sources:
         if source["class"] != "Pozo":
@@ -77,10 +79,8 @@ def run_notification(sources):
         else:
             play_pozo_sound(3 * source["cartesian_coords"][0], source["cartesian_coords"][1] / 2, 0)
 
-    # print("%s: %s" % ("Notification-Step", time.ctime(time.time())))
 
-
-def run_detection(i, display):
+def run_detection(i, display, debug):
     images = []
 
     for idx in [0, 1]:
@@ -96,12 +96,12 @@ def run_detection(i, display):
 
         if len(sources) > 0:
             if i == 99:
-                i = 0
+                i = 0   # Save a maximun of 100 images
             else:
                 i = i + 1
-
-            # print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
-            # cv2.imwrite(f"./result/imagen_{i}.png", image)
+            if debug:
+                print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
+                cv2.imwrite(f"./result/imagen_{i}.png", image)  # Save image for debugging
         else:
             print(f"Detection-Step: No Objects Detected.")
 
@@ -109,50 +109,45 @@ def run_detection(i, display):
 
 
 if __name__ == "__main__":
-    display = False
-
     listener = oalGetListener()
     listener.set_position([0, 0, 0])
+    play_start_sound()  # Start Sound to Notify Initialization Started
 
-    play_start_sound()
+    display = False
+    debug = False
 
     print("[INFO] Loading Detection Model...")
     # Using TF MODEL
     interpreter = tf.saved_model.load(PATH_TO_SAVED_MODEL)
 
-    # USING TFLITE MODEL
+    # WHEN TFLITE MODEL
     # interpreter = tf.lite.Interpreter(model_path=PATH_TO_TFLITE_MODEL)
     # interpreter.allocate_tensors()
 
+    # Cameras Initialization
     cameras = []
-
     print("[INFO] Opening Cameras...")
     for port in [0, 2]:
         webcam = VideoCapture(port)
         cameras.append(webcam)
 
     time.sleep(2)
-
-    rotations = [cv2.ROTATE_180, cv2.ROTATE_180]
+    rotations = [cv2.ROTATE_180, cv2.ROTATE_180]    # Cameras are positioned up-side-down
 
     start_time = time.time()
-
     print("[INFO] Starting Job")
-
-    play_start_sound()
+    play_start_sound()  # Start Sound to Notify Initialization Finished
 
     i = 0
-
     while (time.time() - start_time) < total_time or total_time == -1:
         start_det_time = time.time()
-        sources, i = run_detection(i, display)
+        sources, i = run_detection(i, display, debug)
         print(f"Detection took: {time.time() - start_det_time} s")
         start_not_time = time.time()
-        run_notification(sources)
-        print(f"Notification took: {time.time() - start_det_time} s")
+        run_notification(sources, debug)
+        print(f"Notification took: {time.time() - start_not_time} s")
 
         key = cv2.waitKey(1) & 0xFF
-
         # If the `q` key was pressed, break from the loop
         if key == ord("q"):
             for cap in cameras:
