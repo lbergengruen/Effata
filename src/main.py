@@ -94,16 +94,18 @@ def run_detection(i, display, debug):
     if display:
         cv2.imshow("Camera", image)
 
-        if len(sources) > 0:
-            if i == 99:
-                i = 0   # Save a maximun of 100 images
-            else:
-                i = i + 1
-            if debug:
-                print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
-                cv2.imwrite(f"./result/imagen_{i}.png", image)  # Save image for debugging
+    if len(sources) > 0:
+        if i == 99:
+            i = 0   # Save a maximun of 100 images
         else:
-            print(f"Detection-Step: No Objects Detected.")
+            i = i + 1
+        if debug:
+            print(f"Detection-Step: Saving Image in ./result/imagen_{i}.png")
+            cv2.imwrite(f"./result/imagen_{i}.png", image)  # Save image for debugging
+            cv2.imwrite(f"./result/raw_imagen_{i}_1.png", images[0])  # Save image for debugging
+            cv2.imwrite(f"./result/raw_imagen_{i}_2.png", images[1])  # Save image for debugging
+    else:
+        print(f"Detection-Step: No Objects Detected.")
 
     return sources, i
 
@@ -114,7 +116,7 @@ if __name__ == "__main__":
     play_start_sound()  # Start Sound to Notify Initialization Started
 
     display = False
-    debug = False
+    debug = True
 
     print("[INFO] Loading Detection Model...")
     # Using TF MODEL
