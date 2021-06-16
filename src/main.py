@@ -115,7 +115,7 @@ if __name__ == "__main__":
     listener.set_position([0, 0, 0])
     play_start_sound()  # Start Sound to Notify Initialization Started
 
-    display = False
+    display = True
     debug = True
 
     print("[INFO] Loading Detection Model...")

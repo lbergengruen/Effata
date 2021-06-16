@@ -74,7 +74,7 @@ def detect_objects_tf(images, net, display):
                 max_boxes_to_draw=20,
                 min_score_thresh=MIN_CONFIDENCE,
                 agnostic_mode=False)
-            cv2.putText(image_np_with_detections, f'Distance: {source["distance"]}', (source['box'][0], source['box'][3] + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+            print(f'Distance {source["class"]}: {source["distance"]}')
 
     return sources, image_np_with_detections
 
