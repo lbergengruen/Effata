@@ -31,8 +31,7 @@ if __name__ == "__main__":
         for idx in [0, 1]:
             stream = cameras[idx]
             frame = stream.read()
-            frame = imutils.resize(frame, height=H, width=W)
-            frame = cv2.rotate(frame, rotations[idx])
+            frame = imutils.resize(frame, height=240, width=320)
             images.append(cv2.rotate(frame, rotations[idx]))
 
             cv2.imshow(f"Camera {idx}", frame)
