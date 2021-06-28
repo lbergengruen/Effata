@@ -31,15 +31,19 @@ if __name__ == "__main__":
         for idx in [0, 1]:
             stream = cameras[idx]
             ret, frame = stream.read()
-            frame = imutils.resize(frame, height=240, width=320)
-            images.append(cv2.rotate(frame, rotations[idx]))
+            frame = cv2.rotate(imutils.resize(frame, height=240, width=320), rotations[idx])
+            images.append(frame)
 
             cv2.imshow(f"Camera {idx}", frame)
 
         i = i + 1
-        print(f"Saving Raw Images #{i}")
-        cv2.imwrite(f"./raw/right/imagen_{i}.png", images[0])
-        cv2.imwrite(f"./raw/left/imagen_{i}.png", images[1])
+        if i<10:
+            s = f"0{i}"
+        else:
+            s = f"{i}"
+        print(f"Saving Raw Images #{s}")
+        cv2.imwrite(f"./raw/right/imagen_{s}.png", images[0])
+        cv2.imwrite(f"./raw/left/imagen_{s}.png", images[1])
 
         # time.sleep(0.2)
 
