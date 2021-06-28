@@ -37,7 +37,11 @@ if __name__ == "__main__":
             cv2.imshow(f"Camera {idx}", frame)
 
         i = i + 1
-        if i<10:
+        if i < 10:
+            s = f"000{i}"
+        elif i < 100:
+            s = f"00{i}"
+        elif i < 1000:
             s = f"0{i}"
         else:
             s = f"{i}"
