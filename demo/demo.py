@@ -10,10 +10,11 @@ from PIL import Image
 if __name__ == "__main__":
     print("[INFO] Starting Job")
 
-    version = 1
+    version = 2
 
     images_list = os.listdir(f"./raw/v{version}/right/")
-    images_list.remove('.DS_Store')
+    if '.DS_Store' in images_list:
+        images_list.remove('.DS_Store')
     images_list.sort()
 
     # number_images = int((images_list[-1].split('_')[1]).split(".")[0])
@@ -43,7 +44,7 @@ if __name__ == "__main__":
     #     if key == ord("q"):
     #         break
 
-    for image_file in images_list[100:300]:
+    for image_file in images_list:
         print(image_file)
         left_im = cv2.imread(f"./processed/v{version}/left/{image_file}")[:, :, ::-1]
         right_im = cv2.imread(f"./processed/v{version}/right/{image_file}")[:, :, ::-1]
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     im = cv2.imread(f"./final/v{version}/{images_list[0]}")[:, :, ::-1]
     a = axarr.imshow(im)
 
-    for image_file in images_list[100:300]:
+    for image_file in images_list:
         print(image_file)
         im = cv2.imread(f"./final/v{version}/{image_file}")[:, :, ::-1]
         a.set_data(im)
