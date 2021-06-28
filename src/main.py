@@ -26,7 +26,7 @@ MIN_CONFIDENCE = 0.5  # Minimum Confidence accepted from the Detection Model
 
 # MODEL INITIALIZATION
 CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
-           "Sculpture", "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
+           "Street light", "Table", "Traffic light", "Traffic sign", "Tree", "Pozo", "Baliza", "Cono"]
 PATH_TO_LABELS = "./models/ssd_trained_model/label_map.pbtxt"
 PATH_TO_SAVED_MODEL = "./models/ssd_trained_model/saved_model"
 

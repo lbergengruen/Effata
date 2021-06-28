@@ -9,6 +9,8 @@ W = 320  # Width of the images taken by the camera
 H = 240  # Height of the images taken by the camera
 
 if __name__ == "__main__":
+    version = 1
+
     # Cameras Initialization
     cameras = []
     print("[INFO] Opening Cameras...")
@@ -46,8 +48,8 @@ if __name__ == "__main__":
         else:
             s = f"{i}"
         print(f"Saving Raw Images #{s}")
-        cv2.imwrite(f"./raw/right/imagen_{s}.png", images[0])
-        cv2.imwrite(f"./raw/left/imagen_{s}.png", images[1])
+        cv2.imwrite(f"./raw/v{version}/left/imagen_{s}.png", images[0])
+        cv2.imwrite(f"./raw/v{version}/right/imagen_{s}.png", images[1])
 
         # time.sleep(0.2)
 
