@@ -167,9 +167,12 @@ def stereo_match(left_boxes, right_boxes):
 
 
 if __name__ == "__main__":
-    version = 3
+    version = 1
 
     print("[INFO] Starting Job")
+
+    notification_cooldown = 22
+    notification_duration = 20
 
     files_list = os.listdir(f"./final/v{version}/")
     if '.DS_Store' in files_list:
@@ -179,9 +182,12 @@ if __name__ == "__main__":
     images_list = [i for i in files_list if 'imagen' in i]
     text_list = [i for i in files_list if 'text' in i]
 
+    cooldown_countdown = 0
+    duration_countdown = 0
+
     for id in range(len(images_list)):
         print(id)
-        im = (cv2.imread(f"./final/v{version}/{images_list[id]}")) // 6
+        im = (cv2.imread(f"./raw/v{version}/right/{images_list[id]}")) // 6
         txt = open(f"./final/v{version}/{text_list[id]}", "r").read()
         txt_array = txt.replace('[{', '{').replace("'", "\"").replace('}]', '}').replace('}, {', '}/{').split('/')
 
@@ -189,19 +195,44 @@ if __name__ == "__main__":
 
             txt_array = reduce_sources(txt_array)
 
-            for obj in txt_array:
-                obj = json.loads(obj)
-                radius = int(7 * 500/obj['distance'])
+            if duration_countdown > 0:
+                for obj in temp_obj:
+                    obj = json.loads(obj)
+                    radius = int(7 * 500 / obj['distance'])
 
-                if radius > 30:
-                    radius = 30
+                    if radius > 30:
+                        radius = 30
 
-                if "merged" in obj and obj["merged"]:
-                    color = (0, 255, 0)
-                else:
-                    color = (0, 0, 255)
+                    if "merged" in obj and obj["merged"]:
+                        color = (0, 255 * (0.8 * duration_countdown/notification_duration + 0.2), 0)
+                    else:
+                        color = (0, 0, 255 * (0.8 * duration_countdown/notification_duration + 0.2))
 
-                cv2.circle(im, (int((obj['box'][1]+obj['box'][3])*W/2), int((obj['box'][0]+obj['box'][2])*H/2)), radius, color, 4)
+                    cv2.circle(im, (
+                        int((obj['box'][1] + obj['box'][3]) * W / 2), int((obj['box'][0] + obj['box'][2]) * H / 2)),
+                                   radius, color, 4)
+                duration_countdown = duration_countdown - 1
+            elif cooldown_countdown == 0:
+                for obj in txt_array:
+                    obj = json.loads(obj)
+                    radius = int(7 * 500/obj['distance'])
+
+                    if radius > 30:
+                        radius = 30
+
+                    if "merged" in obj and obj["merged"]:
+                        color = (0, 255, 0)
+                    else:
+                        color = (0, 0, 255)
+
+                    cv2.circle(im, (int((obj['box'][1]+obj['box'][3])*W/2), int((obj['box'][0]+obj['box'][2])*H/2)), radius, color, 4)
+                cooldown_countdown = notification_cooldown
+                duration_countdown = notification_duration
+                temp_obj = txt_array
+            else:
+                cooldown_countdown = cooldown_countdown - 1
+
+
 
         cv2.imwrite(f"./feedback/v{version}/{images_list[id]}", im)
 
