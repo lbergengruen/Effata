@@ -16,8 +16,8 @@ import json
 total_time = 300
 W = 320  # Width of the images taken by the camera
 H = 240  # Height of the images taken by the camera
-MIN_CONFIDENCE = 0.42
-MAX_DISTANCE_CM = 300  # Value expressed in centimeters
+MIN_CONFIDENCE = 0.40
+MAX_DISTANCE_CM = 500  # Value expressed in centimeters
 camera_offset_cm = 10  # Value expressed in centimeters
 offset_adjust = 300  # Constant Value that depends on the cameras used and lets us calculate distance
 CLASSES = ["Barrel", "Bicycle", "Bus", "Car", "Chair", "Dog", "Fire hydrant", "Horse", "Palm tree", "Person",
@@ -167,7 +167,7 @@ def stereo_match(left_boxes, right_boxes):
 
 
 if __name__ == "__main__":
-    version = 2
+    version = 1
 
     print("[INFO] Starting Job")
 
@@ -192,6 +192,7 @@ if __name__ == "__main__":
         cv2.imwrite(f"./processed/v{version}/right/imagen_{id}.png", images[1])
 
         cv2.imwrite(f"./final/v{version}/imagen_{id}.png", final_image)
+        os.remove(f"./final/v{version}/text_{id}.txt")
         f = open(f"./final/v{version}/text_{id}.txt", "a")
         f.write(str(sources))
         f.close()
