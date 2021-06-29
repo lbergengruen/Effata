@@ -9,7 +9,7 @@ W = 320  # Width of the images taken by the camera
 H = 240  # Height of the images taken by the camera
 
 if __name__ == "__main__":
-    version = 3
+    version = 4
 
     # Cameras Initialization
     cameras = []

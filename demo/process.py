@@ -167,7 +167,7 @@ def stereo_match(left_boxes, right_boxes):
 
 
 if __name__ == "__main__":
-    version = 1
+    version = 4
 
     print("[INFO] Starting Job")
 
