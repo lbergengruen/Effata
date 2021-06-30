@@ -167,11 +167,11 @@ def stereo_match(left_boxes, right_boxes):
 
 
 if __name__ == "__main__":
-    version = 1
+    version = 4
 
     print("[INFO] Starting Job")
 
-    notification_cooldown = 22
+    notification_cooldown = 10
     notification_duration = 20
 
     files_list = os.listdir(f"./final/v{version}/")
@@ -212,6 +212,12 @@ if __name__ == "__main__":
                         int((obj['box'][1] + obj['box'][3]) * W / 2), int((obj['box'][0] + obj['box'][2]) * H / 2)),
                                    radius, color, 4)
                 duration_countdown = duration_countdown - 1
+
+                if text_list[id] in os.listdir(f"./feedback/v{version}/"):
+                    os.remove(f"./feedback/v{version}/{text_list[id]}")
+                f = open(f"./feedback/v{version}/{text_list[id]}", "a")
+                f.write(str(temp_obj))
+                f.close()
             elif cooldown_countdown == 0:
                 for obj in txt_array:
                     obj = json.loads(obj)
@@ -229,11 +235,21 @@ if __name__ == "__main__":
                 cooldown_countdown = notification_cooldown
                 duration_countdown = notification_duration
                 temp_obj = txt_array
+
+                if text_list[id] in os.listdir(f"./feedback/v{version}/"):
+                    os.remove(f"./feedback/v{version}/{text_list[id]}")
+                f = open(f"./feedback/v{version}/{text_list[id]}", "a")
+                f.write(str(temp_obj))
+                f.close()
             else:
                 cooldown_countdown = cooldown_countdown - 1
-
-
+                if text_list[id] in os.listdir(f"./feedback/v{version}/"):
+                    os.remove(f"./feedback/v{version}/{text_list[id]}")
+                f = open(f"./feedback/v{version}/{text_list[id]}", "a")
+                f.write("[]")
+                f.close()
 
         cv2.imwrite(f"./feedback/v{version}/{images_list[id]}", im)
+
 
     print("[INFO] Job Finished")

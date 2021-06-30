@@ -192,7 +192,8 @@ if __name__ == "__main__":
         cv2.imwrite(f"./processed/v{version}/right/imagen_{id}.png", images[1])
 
         cv2.imwrite(f"./final/v{version}/imagen_{id}.png", final_image)
-        os.remove(f"./final/v{version}/text_{id}.txt")
+        if f"text_{id}.txt" in os.listdir(f"./final/v{version}/"):
+            os.remove(f"./final/v{version}/text_{id}.txt")
         f = open(f"./final/v{version}/text_{id}.txt", "a")
         f.write(str(sources))
         f.close()

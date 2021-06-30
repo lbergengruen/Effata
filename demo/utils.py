@@ -74,7 +74,7 @@ def check_and_merge_objects(o1, o2):
 
 def keep_significant_sources(sources):
     # In case of having to reduce the number of sources to a minimum we keep the 3 closest objects in sight
-    sources = sorted(sources, key=lambda k: k['distance'])
+    sources = sorted(sources, key=lambda k: json.loads(k)['distance'])
     return sources[:3]
 
 
