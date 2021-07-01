@@ -41,7 +41,7 @@ if __name__ == "__main__":
         images_list.remove('.DS_Store')
     images_list.sort()
 
-    images_list = images_list[200:700]
+    images_list = images_list[200:600]
 
     f, axarr = plt.subplots(1, 2, figsize=(15, 8))
     axarr[0].set_title("Left Camera")
